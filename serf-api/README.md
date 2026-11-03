@@ -1,316 +1,458 @@
-# Sistema de Soporte Técnico - Backend
+# SERF API
 
-API REST desarrollada para la gestión de solicitudes de soporte técnico.
+Backend del proyecto **SERF - Sistema Empresarial de Gestión de Reportes Financieros**.
 
-El sistema permite administrar clientes, técnicos, usuarios y solicitudes de soporte, aplicando reglas de negocio para la asignación de técnicos, prioridades, cambios de estado, autenticación y autorización por roles.
-
-La información se almacena de forma persistente en una base de datos MySQL mediante Spring Data JPA e Hibernate.
+Este módulo contiene la API REST desarrollada con **Java 21 y Spring Boot**, encargada de gestionar usuarios, clientes, filiales, productos, ventas, seguridad y generación de reportes financieros.
 
 ---
 
-## Integrantes y responsabilidades
-
-Michael:
-Análisis / Frontend / Controladores / Seguridad /
-Documentación / Pruebas
-
-Aldair:
-Modelado / DTO / Backend / Servicios /
-Lógica de negocio / Validaciones / Persistencia / QA
-
-## Tecnologías utilizadas
+## Tecnologías
 
 - Java 21
-- Spring Boot
-- Spring Web MVC
+- Spring Boot 4.1.1
+- Spring MVC
 - Spring Data JPA
 - Hibernate
-- MySQL
-- Jakarta Validation
 - Spring Security
 - JWT
-- BCrypt
-- OAuth2 Resource Server
+- MySQL 8
 - Maven
-- JUnit
 - Swagger / OpenAPI
-- React + TypeScript en el frontend
+- JUnit 5
 
 ---
 
-# Arquitectura
-
-El backend se encuentra organizado mediante una arquitectura por capas y separación de responsabilidades.
+## Estructura del backend
 
 ```text
-Frontend / Cliente HTTP
-        ↓
-Spring Security / JWT
-        ↓
-Controller
-        ↓
-Application Service
-        ↓
-Service
-        ↓
-Validator
-        ↓
-Repository
-        ↓
-JPA / Hibernate
-        ↓
-MySQL
-```
-
-Principales paquetes:
-
-```text
-src/main/java/com/idat/soportetecnico
-├── application
-│   └── impl
+src/main/java/com/idat/serf
 ├── config
 ├── controller
 ├── dto
 ├── exception
 ├── mapper
 ├── model
+├── patterns
 ├── repository
 ├── security
 ├── service
-│   └── impl
-└── validator
+├── validator
+└── SerfApplication.java
 ```
 
-Cada capa cumple una responsabilidad específica:
-
-- **Security:** autentica al usuario y valida sus permisos mediante JWT.
-- **Controller:** recibe las solicitudes HTTP.
-- **Application Service:** coordina los casos de uso.
-- **Service:** contiene la lógica relacionada con cada entidad.
-- **Validator:** aplica reglas de negocio específicas.
-- **Repository:** gestiona el acceso a los datos.
-- **JPA / Hibernate:** realiza el mapeo objeto-relacional.
-- **MySQL:** almacena la información de forma persistente.
-
-Esta estructura permite mantener bajo acoplamiento y una mejor separación de responsabilidades.
+Cada paquete tiene una responsabilidad específica para mantener bajo acoplamiento y alta cohesión.
 
 ---
 
-# Base de datos
+## Capas principales
 
-El proyecto utiliza MySQL.
+### Controller
 
-Nombre de la base de datos:
+Recibe las solicitudes HTTP y expone los endpoints REST.
 
-```text
-soporte_tecnico_db
-```
-
-El script para crear la base de datos, tablas y datos iniciales se encuentra en:
+Ejemplos:
 
 ```text
-database/setup.sql
+AuthController
+ClienteController
+FilialController
+ProductoController
+ReporteController
+UsuarioController
+VentaController
 ```
 
-La estructura general del proyecto es:
+### Service
+
+Contiene la lógica de negocio.
+
+Ejemplos:
 
 ```text
-efsrt2-soporte-tecnico
-├── database
-│   └── setup.sql
-├── efsrt2-soporte-tecnico-api
-└── efsrt2-soporte-tecnico-web
+ClienteService
+FilialService
+ProductoService
+ReporteService
+UsuarioService
+VentaService
 ```
 
-Entre las principales tablas se encuentran:
+### Repository
+
+Gestiona el acceso a la base de datos mediante Spring Data JPA.
+
+```text
+ClienteRepository
+FilialRepository
+ProductoRepository
+UsuarioRepository
+VentaRepository
+```
+
+### DTO
+
+Define los objetos utilizados para recibir y devolver información mediante la API.
+
+### Mapper
+
+Convierte entidades del modelo en DTO y viceversa.
+
+### Validator
+
+Contiene validaciones específicas del negocio.
+
+Actualmente:
+
+```text
+StockDisponibleValidator
+```
+
+---
+
+## Base de datos
+
+El sistema utiliza:
+
+```text
+MySQL 8
+```
+
+Base de datos:
+
+```text
+serf_db
+```
+
+Configuración principal:
+
+```properties
+spring.datasource.url=jdbc:mysql://localhost:3306/serf_db?useSSL=false&allowPublicKeyRetrieval=true
+spring.datasource.username=${DB_USER:root}
+spring.datasource.password=${DB_PASSWORD}
+
+spring.jpa.hibernate.ddl-auto=update
+```
+
+Las tablas principales corresponden a:
 
 ```text
 clientes
-tecnicos
-solicitudes
 usuarios
+filiales
+productos
+ventas
 ```
-
-La tabla `usuarios` almacena la información utilizada para la autenticación:
-
-```text
-id
-email
-password_hash
-rol
-activo
-```
-
-Las contraseñas no se almacenan en texto plano. Se utiliza BCrypt para generar el hash correspondiente.
 
 ---
 
-# Configuración
+## Variables de entorno
 
-La configuración principal se encuentra en:
+La aplicación utiliza variables de entorno para evitar guardar credenciales directamente en el código.
 
-```text
-src/main/resources/application.properties
-```
-
-La contraseña de MySQL no se almacena directamente en el repositorio.
-
-Se utiliza:
+Variables requeridas:
 
 ```text
 DB_PASSWORD
-```
-
-El usuario de MySQL puede configurarse mediante:
-
-```text
-DB_USER
-```
-
-Si no se define, se utiliza `root`.
-
-También se utilizan variables de entorno para JWT y para el administrador inicial:
-
-```text
 JWT_SECRET
-JWT_ISSUER
-JWT_EXPIRATION_SECONDS
-
 ADMIN_EMAIL
 ADMIN_PASSWORD
 ```
 
----
-
-## Ejemplo de configuración en PowerShell
-
-### Base de datos
-
-```powershell
-$env:DB_PASSWORD="TU_CONTRASEÑA_MYSQL"
-```
-
-### Generar una clave JWT segura para desarrollo
-
-```powershell
-$bytes = New-Object byte[] 32
-$rng = [System.Security.Cryptography.RandomNumberGenerator]::Create()
-$rng.GetBytes($bytes)
-$env:JWT_SECRET = [Convert]::ToBase64String($bytes)
-$rng.Dispose()
-```
-
-### Administrador inicial
-
-```powershell
-$env:ADMIN_EMAIL="admin@grzasociados.com"
-$env:ADMIN_PASSWORD="TU_CONTRASEÑA_DE_DESARROLLO"
-```
-
-Las contraseñas y secretos reales no deben almacenarse directamente en GitHub.
-
-## Crear usuarios y probar los roles
-
-El administrador inicial se crea al iniciar la API (`ADMIN_EMAIL` / `ADMIN_PASSWORD`). El rol `TECNICO` se crea con la sesión del administrador:
-
-1. `POST /api/auth/login` con `{"email": "admin@grzasociados.com", "password": "TU_CONTRASEÑA_ADMIN"}`.
-2. Usar el `token` devuelto en Swagger (botón **Authorize**) o como `Authorization: Bearer <token>`.
-3. `POST /api/usuarios` con `{"email": "tecnico@grzasociados.com", "password": "Tecnico2026!", "rol": "TECNICO"}`.
-
-La colección de Postman (`postman/`) automatiza estos pasos en la carpeta **00 - Autenticación y usuarios (JWT)**; solo se debe definir la variable `adminPassword`.
-
----
-
-# Seguridad
-
-El sistema implementa autenticación y autorización mediante Spring Security y JWT.
-
-La seguridad actualmente incluye:
-
-- Spring Security.
-- Autenticación mediante JWT.
-- Tokens Bearer.
-- Sesiones stateless.
-- BCrypt para contraseñas.
-- Roles `ADMINISTRADOR` y `TECNICO`.
-- Control de acceso según endpoint.
-- Validación de permisos para cambios de estado.
-- Protección de endpoints administrativos.
-- Swagger configurado para autenticación Bearer.
-
-El flujo de autenticación es:
+Ejemplo:
 
 ```text
-Usuario
-   ↓
-POST /api/auth/login
-   ↓
-Validación de correo y contraseña
-   ↓
-BCrypt
-   ↓
-Generación de JWT
-   ↓
-JWT + rol del usuario
-   ↓
-Frontend
-   ↓
-Authorization: Bearer <token>
-   ↓
+DB_PASSWORD=tu_password_mysql
+JWT_SECRET=tu_secret_base64
+ADMIN_EMAIL=admin@serf.local
+ADMIN_PASSWORD=tu_password_admin
+```
+
+La clave `JWT_SECRET` debe estar codificada en Base64 y representar una clave de al menos 32 bytes.
+
+---
+
+## Seguridad
+
+La API utiliza:
+
+```text
 Spring Security
-   ↓
-Endpoint autorizado
+JWT
 ```
 
----
-
-# Roles del sistema
-
-## ADMINISTRADOR
-
-El administrador puede:
-
-- Iniciar sesión.
-- Registrar solicitudes.
-- Consultar solicitudes.
-- Administrar usuarios.
-- Registrar clientes.
-- Modificar clientes.
-- Eliminar clientes.
-- Registrar técnicos.
-- Modificar técnicos.
-- Eliminar técnicos.
-- Cerrar solicitudes resueltas.
-- Acceder a funciones administrativas.
-
-## TECNICO
-
-El técnico puede:
-
-- Iniciar sesión.
-- Consultar solicitudes.
-- Iniciar la atención de solicitudes.
-- Cambiar una solicitud de `PENDIENTE` a `EN_PROCESO`.
-- Cambiar una solicitud de `EN_PROCESO` a `RESUELTA`.
-- Consultar información necesaria para realizar la atención.
-
-El técnico no puede:
-
-- Registrar nuevas solicitudes.
-- Administrar usuarios.
-- Crear, modificar o eliminar clientes.
-- Crear, modificar o eliminar técnicos.
-- Eliminar solicitudes.
-- Cerrar definitivamente una solicitud resuelta.
-
----
-
-# Autenticación
-
-## Endpoint de login
+Endpoint público de autenticación:
 
 ```text
 POST /api/auth/login
 ```
 
-Ejemplo
+Swagger también se encuentra habilitado públicamente para fines de desarrollo y pruebas.
+
+El resto de la API requiere autenticación según la configuración de seguridad.
+
+### Roles
+
+```text
+ADMINISTRADOR
+VENDEDOR
+```
+
+---
+
+## Administrador inicial
+
+Al iniciar la aplicación, SERF verifica si existe el administrador configurado mediante:
+
+```text
+ADMIN_EMAIL
+ADMIN_PASSWORD
+```
+
+Si no existe, el sistema puede crear el usuario administrador inicial.
+
+---
+
+## Módulos principales
+
+### Clientes
+
+Permite gestionar la información de clientes.
+
+### Usuarios
+
+Permite gestionar usuarios del sistema.
+
+### Filiales
+
+Permite registrar las diferentes filiales de la empresa.
+
+### Productos
+
+Gestiona información como:
+
+```text
+Código
+Nombre
+Categoría
+Costo de importación
+Precio de venta
+Proveedor
+Stock
+Filial
+```
+
+### Ventas
+
+Registra operaciones de venta asociadas a:
+
+```text
+Producto
+Cliente
+Vendedor
+Filial
+Cantidad
+Precio unitario
+Método de pago
+```
+
+Antes de registrar una venta se valida la disponibilidad del stock.
+
+---
+
+## Validación de stock
+
+La clase:
+
+```text
+StockDisponibleValidator
+```
+
+verifica:
+
+- Que la cantidad sea mayor a cero.
+- Que exista stock suficiente.
+
+Cuando la venta es válida:
+
+```text
+Registrar venta
+↓
+Descontar stock
+↓
+Guardar producto actualizado
+↓
+Guardar venta
+```
+
+---
+
+## Reportes financieros
+
+La API permite generar reportes financieros mensuales.
+
+### Reporte manual
+
+```text
+POST /api/reportes/mensual
+```
+
+Los datos financieros son enviados mediante la solicitud.
+
+### Reporte automático
+
+```text
+POST /api/reportes/mensual/automatico
+```
+
+El sistema consulta la base de datos para calcular información relacionada con ingresos y costos de productos vendidos.
+
+---
+
+## Patrones de diseño
+
+Los patrones se encuentran en:
+
+```text
+com.idat.serf.patterns
+```
+
+### Creacionales
+
+```text
+Singleton
+Prototype
+Builder
+```
+
+### Estructurales
+
+```text
+Composite
+Decorator
+Facade
+```
+
+Principales clases:
+
+```text
+ConfiguracionGlobal
+PlantillaReporte
+ReporteBuilder
+ReporteFinancieroBuilder
+ComponenteReporte
+ElementoReporte
+SeccionReporte
+ReporteDecorator
+MarcaAguaDecorator
+FirmaDigitalDecorator
+ReporteFacade
+```
+
+---
+
+## SOLID
+
+El proyecto aplica principios SOLID mediante:
+
+- Separación entre controladores, servicios y repositorios.
+- Validadores independientes.
+- Uso de interfaces de servicio.
+- Inyección de dependencias mediante constructores.
+- Clases con responsabilidades específicas.
+
+Ejemplo:
+
+```text
+VentaServiceImpl
+├── VentaRepository
+├── ProductoRepository
+└── StockDisponibleValidator
+```
+
+---
+
+## Swagger
+
+Con el backend ejecutándose:
+
+```text
+http://localhost:8080/swagger-ui/index.html
+```
+
+Swagger permite probar los módulos:
+
+```text
+Auth
+Clientes
+Usuarios
+Filiales
+Productos
+Ventas
+Reportes
+```
+
+---
+
+## Ejecutar el proyecto
+
+Desde IntelliJ ejecutar:
+
+```text
+SerfApplication.java
+```
+
+También puede ejecutarse desde la terminal de Windows:
+
+```bash
+mvnw.cmd spring-boot:run
+```
+
+El servidor se inicia por defecto en:
+
+```text
+http://localhost:8080
+```
+
+---
+
+## Pruebas
+
+Las pruebas se encuentran en:
+
+```text
+src/test/java/com/idat/serf
+```
+
+Incluyen pruebas para:
+
+```text
+Singleton
+Prototype
+Builder
+Composite
+Decorator
+Facade
+StockDisponibleValidator
+Contexto de Spring Boot
+```
+
+Entre las clases principales:
+
+```text
+ConfiguracionGlobalTest
+PlantillaReporteTest
+ReporteBuilderTest
+CompositeTest
+DecoratorTest
+ReporteFacadeTest
+StockDisponibleValidatorTest
+SerfApplicationTests
+```
+
+---
+
+## Proyecto académico
+
+**Curso:** Patrones de Diseño de Software
+
+**Sistema:** SERF - Sistema Empresarial de Gestión de Reportes Financieros
