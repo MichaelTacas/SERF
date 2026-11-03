@@ -1,9 +1,9 @@
 import { authService } from './authService';
 
-async function request<T>(
+async function execute(
     url: string,
     options: RequestInit = {}
-): Promise<T> {
+): Promise<Response> {
 
     const token = authService.obtenerToken();
 
@@ -23,7 +23,7 @@ async function request<T>(
 
     const response = await fetch(url, {
         ...options,
-        headers
+        headers,
     });
 
     if (!response.ok) {
@@ -52,6 +52,19 @@ async function request<T>(
         );
     }
 
+    return response;
+}
+
+async function requestJson<T>(
+    url: string,
+    options: RequestInit = {}
+): Promise<T> {
+
+    const response = await execute(
+        url,
+        options
+    );
+
     if (response.status === 204) {
         return undefined as T;
     }
@@ -59,10 +72,23 @@ async function request<T>(
     return response.json();
 }
 
+async function requestText(
+    url: string,
+    options: RequestInit = {}
+): Promise<string> {
+
+    const response = await execute(
+        url,
+        options
+    );
+
+    return response.text();
+}
+
 export const apiClient = {
 
     get<T>(url: string): Promise<T> {
-        return request<T>(url);
+        return requestJson<T>(url);
     },
 
     post<T>(
@@ -70,9 +96,9 @@ export const apiClient = {
         body: unknown
     ): Promise<T> {
 
-        return request<T>(url, {
+        return requestJson<T>(url, {
             method: 'POST',
-            body: JSON.stringify(body)
+            body: JSON.stringify(body),
         });
     },
 
@@ -81,10 +107,30 @@ export const apiClient = {
         body: unknown
     ): Promise<T> {
 
-        return request<T>(url, {
+        return requestJson<T>(url, {
             method: 'PUT',
-            body: JSON.stringify(body)
+            body: JSON.stringify(body),
         });
-    }
+    },
+
+    delete<T = void>(
+        url: string
+    ): Promise<T> {
+
+        return requestJson<T>(url, {
+            method: 'DELETE',
+        });
+    },
+
+    postText(
+        url: string,
+        body: unknown
+    ): Promise<string> {
+
+        return requestText(url, {
+            method: 'POST',
+            body: JSON.stringify(body),
+        });
+    },
 
 };

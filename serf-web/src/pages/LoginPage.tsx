@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react';
 import { authService } from '../services/authService';
+
 import '../styles/Login.css';
 
 interface LoginPageProps {
@@ -39,11 +40,15 @@ export function LoginPage({
             if (error instanceof Error) {
                 setError(error.message);
             } else {
-                setError('Ocurrió un error al iniciar sesión');
+                setError(
+                    'Ocurrió un error al iniciar sesión'
+                );
             }
 
         } finally {
+
             setCargando(false);
+
         }
     };
 
@@ -53,11 +58,20 @@ export function LoginPage({
             <section className="login-card">
 
                 <div className="login-header">
-                    <h1>Soporte Técnico</h1>
+
+          <span className="login-brand">
+            SERF
+          </span>
+
+                    <h1>
+                        Iniciar sesión
+                    </h1>
 
                     <p>
-                        Ingresa con tu cuenta para acceder al sistema.
+                        Sistema Empresarial de Gestión de
+                        Reportes Financieros
                     </p>
+
                 </div>
 
                 <form
@@ -78,7 +92,7 @@ export function LoginPage({
                             onChange={(event) =>
                                 setEmail(event.target.value)
                             }
-                            placeholder="usuario@grzasociados.com"
+                            placeholder="usuario@empresa.com"
                             required
                             autoComplete="email"
                         />

@@ -289,7 +289,6 @@ src
 │   ├── authService.ts
 │   ├── clienteService.ts
 │   ├── solicitudService.ts
-│   └── tecnicoService.ts
 │
 ├── styles
 │   ├── AppHeader.css

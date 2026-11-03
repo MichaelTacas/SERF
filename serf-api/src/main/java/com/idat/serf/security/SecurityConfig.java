@@ -48,58 +48,129 @@ public class SecurityConfig {
 
                 .authorizeHttpRequests(auth -> auth
 
-                        // =========================================
-                        // LOGIN PUBLICO
-                        // =========================================
+                        // LOGIN
                         .requestMatchers(
                                 HttpMethod.POST,
                                 "/api/auth/login"
                         ).permitAll()
 
-                        // =========================================
-                        // SWAGGER PUBLICO
-                        // =========================================
+                        // SWAGGER
                         .requestMatchers(
                                 "/swagger-ui/**",
                                 "/swagger-ui.html",
                                 "/v3/api-docs/**"
                         ).permitAll()
 
-                        // =========================================
-                        // USUARIOS
-                        // Solo administrador
-                        // =========================================
+                        // =====================================
+                        // USUARIOS - SOLO ADMINISTRADOR
+                        // =====================================
                         .requestMatchers(
                                 "/api/usuarios/**"
                         ).hasRole("ADMINISTRADOR")
 
-                        // =========================================
+                        // =====================================
+                        // FILIALES - SOLO ADMINISTRADOR
+                        // =====================================
+                        .requestMatchers(
+                                "/api/filiales/**"
+                        ).hasRole("ADMINISTRADOR")
+
+                        // =====================================
                         // CLIENTES
-                        // Crear, modificar y eliminar:
-                        // solo administrador
-                        // =========================================
+                        // =====================================
+
+                        // Administrador y vendedor pueden consultar
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/api/clientes/**"
+                        ).hasAnyRole(
+                                "ADMINISTRADOR",
+                                "VENDEDOR"
+                        )
+
+                        // Administrador y vendedor pueden registrar
                         .requestMatchers(
                                 HttpMethod.POST,
                                 "/api/clientes/**"
-                        ).hasRole("ADMINISTRADOR")
+                        ).hasAnyRole(
+                                "ADMINISTRADOR",
+                                "VENDEDOR"
+                        )
 
+                        // Administrador y vendedor pueden editar
                         .requestMatchers(
                                 HttpMethod.PUT,
                                 "/api/clientes/**"
-                        ).hasRole("ADMINISTRADOR")
+                        ).hasAnyRole(
+                                "ADMINISTRADOR",
+                                "VENDEDOR"
+                        )
 
+                        // Solo administrador puede eliminar
                         .requestMatchers(
                                 HttpMethod.DELETE,
                                 "/api/clientes/**"
                         ).hasRole("ADMINISTRADOR")
 
-                        // =========================================
-                        // RESTO DE LA API SERF
-                        // Requiere autenticacion
-                        // =========================================
+                        // =====================================
+                        // PRODUCTOS
+                        // =====================================
+
+                        // Ambos pueden consultar
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/api/productos/**"
+                        ).hasAnyRole(
+                                "ADMINISTRADOR",
+                                "VENDEDOR"
+                        )
+
+                        // Solo administrador modifica inventario
+                        .requestMatchers(
+                                HttpMethod.POST,
+                                "/api/productos/**"
+                        ).hasRole("ADMINISTRADOR")
+
+                        .requestMatchers(
+                                HttpMethod.PUT,
+                                "/api/productos/**"
+                        ).hasRole("ADMINISTRADOR")
+
+                        .requestMatchers(
+                                HttpMethod.DELETE,
+                                "/api/productos/**"
+                        ).hasRole("ADMINISTRADOR")
+
+                        // =====================================
+                        // VENTAS
+                        // =====================================
+
+                        // Administrador y vendedor pueden consultar
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/api/ventas/**"
+                        ).hasAnyRole(
+                                "ADMINISTRADOR",
+                                "VENDEDOR"
+                        )
+
+                        // Solo vendedor registra ventas
+                        .requestMatchers(
+                                HttpMethod.POST,
+                                "/api/ventas/**"
+                        ).hasRole("VENDEDOR")
+
+                        // =====================================
+                        // REPORTES - SOLO ADMINISTRADOR
+                        // =====================================
+                        .requestMatchers(
+                                "/api/reportes/**"
+                        ).hasRole("ADMINISTRADOR")
+
+                        // Cualquier endpoint API no definido
                         .requestMatchers(
                                 "/api/**"
-                        ).authenticated()
+                        ).denyAll()
 
                         .anyRequest().permitAll()
                 )

@@ -1,0 +1,153 @@
+.filiales-page {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 32px 40px 48px;
+    color: #f8fafc;
+}
+
+.filiales-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 28px;
+}
+
+.filiales-header span {
+    color: #60a5fa;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.filiales-header h2 {
+    margin: 6px 0;
+}
+
+.filiales-header p {
+    margin: 0;
+    color: #94a3b8;
+}
+
+.filiales-header button {
+    padding: 10px 18px;
+    background: #2563eb;
+    border: none;
+    border-radius: 8px;
+    color: white;
+    cursor: pointer;
+}
+
+.filiales-error {
+    margin-bottom: 20px;
+    padding: 16px;
+
+    background: #3f1515;
+    border: 1px solid #7f1d1d;
+    border-radius: 10px;
+
+    color: #fecaca;
+}
+
+.filial-form-container,
+.filiales-table-container {
+    margin-bottom: 28px;
+    padding: 24px;
+
+    background: #111827;
+    border: 1px solid #1f2937;
+    border-radius: 14px;
+}
+
+.filial-form {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+}
+
+.filial-form input {
+    padding: 11px 12px;
+
+    background: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 8px;
+
+    color: white;
+}
+
+.filial-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.filial-checkbox input {
+    width: auto;
+}
+
+.filial-form-actions {
+    grid-column: 1 / -1;
+
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.filial-form-actions button,
+.filial-actions button {
+    padding: 9px 14px;
+
+    border: none;
+    border-radius: 7px;
+
+    background: #1e293b;
+    color: white;
+
+    cursor: pointer;
+}
+
+.filial-form-actions button[type='submit'] {
+    background: #2563eb;
+}
+
+.filiales-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.filiales-table th,
+.filiales-table td {
+    padding: 14px;
+    text-align: left;
+
+    border-bottom: 1px solid #1f2937;
+}
+
+.filiales-table th {
+    color: #94a3b8;
+    font-size: 12px;
+}
+
+.filial-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.filial-actions .filial-delete {
+    background: #7f1d1d;
+    color: #fecaca;
+}
+
+@media (max-width: 700px) {
+    .filiales-page {
+        padding: 24px 16px;
+    }
+
+    .filial-form {
+        grid-template-columns: 1fr;
+    }
+
+    .filiales-header {
+        align-items: stretch;
+        flex-direction: column;
+        gap: 16px;
+    }
+}

@@ -1,8 +1,9 @@
+export type RolUsuario =
+    | 'ADMINISTRADOR'
+    | 'VENDEDOR';
+
 export interface AuthResponse {
     token: string;
-    tipo: string;
-    expiraEnSegundos: number;
-    usuarioId: number;
     email: string;
-    rol: 'ADMINISTRADOR' | 'TECNICO';
+    rol: RolUsuario;
 }

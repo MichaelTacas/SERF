@@ -14,26 +14,35 @@ export function AppHeader({
     const nombreRol =
         usuario?.rol === 'ADMINISTRADOR'
             ? 'Administrador'
-            : 'Técnico';
+            : usuario?.rol === 'VENDEDOR'
+                ? 'Vendedor'
+                : 'Sin rol';
 
     return (
         <header className="app-header">
 
             <div className="app-header-brand">
-                <h1>Sistema de Soporte Técnico</h1>
-                <p>GRZ & Asociados</p>
+
+                <h1>SERF</h1>
+
+                <p>
+                    Sistema Empresarial de Gestión de Reportes Financieros
+                </p>
+
             </div>
 
             <div className="app-header-user">
 
                 <div className="app-user-info">
+
           <span className="app-user-email">
-            {usuario?.email}
+            {usuario?.email ?? 'Usuario'}
           </span>
 
                     <span className="app-user-role">
             {nombreRol}
           </span>
+
                 </div>
 
                 <button

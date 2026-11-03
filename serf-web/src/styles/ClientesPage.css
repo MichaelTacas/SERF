@@ -1,0 +1,266 @@
+.clientes-page {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 32px 40px 48px;
+    color: #f8fafc;
+}
+
+.clientes-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    margin-bottom: 28px;
+}
+
+.clientes-eyebrow {
+    display: block;
+    margin-bottom: 8px;
+
+    color: #60a5fa;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1.4px;
+}
+
+.clientes-header h2 {
+    margin: 0 0 8px;
+    font-size: 28px;
+}
+
+.clientes-header p {
+    margin: 0;
+    color: #94a3b8;
+}
+
+.clientes-refresh {
+    padding: 10px 18px;
+
+    background: #2563eb;
+    border: none;
+    border-radius: 8px;
+
+    color: white;
+    font-size: 14px;
+    font-weight: 600;
+
+    cursor: pointer;
+}
+
+.clientes-refresh:hover {
+    background: #1d4ed8;
+}
+
+.clientes-refresh:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.clientes-error,
+.clientes-message {
+    padding: 20px;
+
+    background: #111827;
+    border: 1px solid #1f2937;
+    border-radius: 12px;
+}
+
+.clientes-error {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+
+    border-color: #7f1d1d;
+    color: #fca5a5;
+}
+
+.clientes-message {
+    color: #94a3b8;
+}
+
+.clientes-table-container {
+    overflow: hidden;
+
+    background: #111827;
+    border: 1px solid #1f2937;
+    border-radius: 14px;
+}
+
+.clientes-table-header {
+    padding: 20px 24px;
+
+    border-bottom: 1px solid #1f2937;
+}
+
+.clientes-table-header h3 {
+    margin: 0 0 4px;
+    font-size: 17px;
+}
+
+.clientes-table-header p {
+    margin: 0;
+
+    color: #94a3b8;
+    font-size: 13px;
+}
+
+.clientes-table-wrapper {
+    overflow-x: auto;
+}
+
+.clientes-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.clientes-table th,
+.clientes-table td {
+    padding: 16px 24px;
+    text-align: left;
+
+    border-bottom: 1px solid #1f2937;
+}
+
+.clientes-table th {
+    background: #0f172a;
+
+    color: #94a3b8;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.clientes-table td {
+    color: #e2e8f0;
+    font-size: 14px;
+}
+
+.clientes-table tbody tr:hover {
+    background: #131c2b;
+}
+
+.clientes-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+@media (max-width: 700px) {
+    .clientes-page {
+        padding: 24px 16px;
+    }
+
+    .clientes-header {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .clientes-refresh {
+        width: 100%;
+    }
+}
+
+.cliente-form-container {
+    margin-bottom: 28px;
+    padding: 24px;
+
+    background: #111827;
+    border: 1px solid #1f2937;
+    border-radius: 14px;
+}
+
+.cliente-form-title {
+    margin-bottom: 20px;
+}
+
+.cliente-form-title h3 {
+    margin: 0 0 5px;
+}
+
+.cliente-form-title p {
+    margin: 0;
+    color: #94a3b8;
+    font-size: 13px;
+}
+
+.cliente-form {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+}
+
+.cliente-field {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.cliente-field label {
+    color: #cbd5e1;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.cliente-field input {
+    padding: 11px 12px;
+
+    background: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 8px;
+
+    color: #f8fafc;
+    outline: none;
+}
+
+.cliente-field input:focus {
+    border-color: #3b82f6;
+}
+
+.cliente-form-actions {
+    grid-column: 1 / -1;
+
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.cliente-save,
+.cliente-cancel,
+.cliente-actions button {
+    padding: 9px 14px;
+
+    border: none;
+    border-radius: 7px;
+
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.cliente-save {
+    background: #2563eb;
+    color: white;
+}
+
+.cliente-cancel {
+    background: #334155;
+    color: #e2e8f0;
+}
+
+.cliente-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.cliente-actions button {
+    background: #1e293b;
+    color: #e2e8f0;
+}
+
+.cliente-actions .cliente-delete {
+    background: #7f1d1d;
+    color: #fecaca;
+}
+
+@media (max-width: 800px) {
+    .cliente-form {
+        grid-template-columns: 1fr;
+    }
+}

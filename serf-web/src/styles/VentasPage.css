@@ -1,0 +1,248 @@
+.ventas-page {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 32px 40px 48px;
+    color: #f8fafc;
+}
+
+.ventas-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 24px;
+    margin-bottom: 28px;
+}
+
+.ventas-header span {
+    color: #60a5fa;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.ventas-header h2 {
+    margin: 6px 0;
+    font-size: 28px;
+}
+
+.ventas-header p {
+    margin: 0;
+    color: #94a3b8;
+}
+
+.ventas-header button {
+    padding: 10px 18px;
+    border: none;
+    border-radius: 8px;
+    background: #2563eb;
+    color: white;
+    cursor: pointer;
+}
+
+.ventas-header button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.ventas-error,
+.ventas-success {
+    margin-bottom: 20px;
+    padding: 15px;
+    border-radius: 10px;
+}
+
+.ventas-error {
+    background: #3f1515;
+    border: 1px solid #7f1d1d;
+    color: #fecaca;
+}
+
+.ventas-success {
+    background: #102a20;
+    border: 1px solid #166534;
+    color: #bbf7d0;
+}
+
+.venta-form-container,
+.ventas-table-container {
+    margin-bottom: 28px;
+    padding: 24px;
+
+    background: #111827;
+    border: 1px solid #1f2937;
+    border-radius: 14px;
+}
+
+.venta-form-title {
+    margin-bottom: 20px;
+}
+
+.venta-form-title h3 {
+    margin: 0 0 5px;
+}
+
+.venta-form-title p {
+    margin: 0;
+    color: #94a3b8;
+}
+
+.venta-form {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+}
+
+.venta-field {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.venta-field label {
+    color: #cbd5e1;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.venta-field input,
+.venta-field select {
+    padding: 11px 12px;
+
+    background: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 8px;
+
+    color: #f8fafc;
+    outline: none;
+}
+
+.venta-field input:focus,
+.venta-field select:focus {
+    border-color: #3b82f6;
+}
+
+.venta-product-info {
+    grid-column: 1 / -1;
+
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+
+    padding: 18px;
+
+    background: #0f172a;
+    border: 1px solid #1e293b;
+    border-radius: 10px;
+}
+
+.venta-product-info div {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.venta-product-info span {
+    color: #94a3b8;
+    font-size: 12px;
+}
+
+.venta-product-info strong {
+    font-size: 17px;
+}
+
+.venta-form-actions {
+    grid-column: 1 / -1;
+
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.venta-form-actions button {
+    padding: 10px 16px;
+
+    border: none;
+    border-radius: 8px;
+
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.venta-save {
+    background: #2563eb;
+    color: white;
+}
+
+.venta-clear {
+    background: #334155;
+    color: #e2e8f0;
+}
+
+.ventas-table-title {
+    margin-bottom: 18px;
+}
+
+.ventas-table-title h3 {
+    margin: 0 0 5px;
+}
+
+.ventas-table-title p {
+    margin: 0;
+    color: #94a3b8;
+}
+
+.ventas-table-wrapper {
+    overflow-x: auto;
+}
+
+.ventas-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.ventas-table th,
+.ventas-table td {
+    padding: 14px;
+    text-align: left;
+    border-bottom: 1px solid #1f2937;
+}
+
+.ventas-table th {
+    color: #94a3b8;
+    font-size: 12px;
+}
+
+.ventas-message {
+    padding: 16px 0;
+    color: #94a3b8;
+}
+
+@media (max-width: 1000px) {
+
+    .venta-form {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+}
+
+@media (max-width: 700px) {
+
+    .ventas-page {
+        padding: 24px 16px;
+    }
+
+    .ventas-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .venta-form,
+    .venta-product-info {
+        grid-template-columns: 1fr;
+    }
+
+    .venta-product-info,
+    .venta-form-actions {
+        grid-column: auto;
+    }
+
+}

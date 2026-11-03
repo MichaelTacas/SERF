@@ -19,6 +19,11 @@ dist/
 
 # Logs
 *.log
+logs/
+
+# Archivos temporales
+*.tmp
+*.temp
 
 # Sistema operativo
 .DS_Store

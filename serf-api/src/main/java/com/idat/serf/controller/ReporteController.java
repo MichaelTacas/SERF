@@ -7,7 +7,11 @@ import com.idat.serf.service.ReporteService;
 import jakarta.validation.Valid;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/reportes")
@@ -29,15 +33,18 @@ public class ReporteController {
             produces = MediaType.TEXT_PLAIN_VALUE
     )
     public ResponseEntity<String> generarMensual(
-            @Valid @RequestBody ReporteRequest request
+            @Valid @RequestBody ReporteRequest request,
+            Authentication authentication
     ) {
+
+        String responsable = authentication.getName();
 
         String contenido =
                 reporteFacade.generarReporteMensual(
                         request.getPais(),
                         request.getIngresos(),
                         request.getGastos(),
-                        request.getResponsable()
+                        responsable
                 );
 
         return ResponseEntity.ok(contenido);
@@ -48,13 +55,16 @@ public class ReporteController {
             produces = MediaType.TEXT_PLAIN_VALUE
     )
     public ResponseEntity<String> generarMensualAutomatico(
-            @Valid @RequestBody ReporteAutomaticoRequest request
+            @Valid @RequestBody ReporteAutomaticoRequest request,
+            Authentication authentication
     ) {
+
+        String responsable = authentication.getName();
 
         String contenido =
                 reporteService.generarMensualAutomatico(
                         request.getPais(),
-                        request.getResponsable()
+                        responsable
                 );
 
         return ResponseEntity.ok(contenido);
