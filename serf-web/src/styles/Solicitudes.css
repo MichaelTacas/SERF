@@ -1,0 +1,249 @@
+.solicitudes-page {
+    width: min(1200px, 92%);
+    margin: 0 auto;
+    padding: 40px 0 60px;
+}
+
+/* CABECERA */
+
+.page-header {
+    margin-bottom: 30px;
+}
+
+.page-header h1 {
+    margin: 0;
+    font-size: 32px;
+    color: #f9fafb;
+}
+
+.page-header p {
+    margin-top: 8px;
+    color: #9ca3af;
+    font-size: 15px;
+}
+
+/* TARJETAS */
+
+.form-card,
+.table-card {
+    background: #181b23;
+    border: 1px solid #2a2f3a;
+    border-radius: 14px;
+    padding: 26px;
+    margin-bottom: 28px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+}
+
+.form-card h2,
+.table-card h2 {
+    margin: 0 0 22px;
+    color: #f3f4f6;
+    font-size: 21px;
+}
+
+/* FORMULARIO */
+
+.solicitud-form {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.form-group-full {
+    grid-column: 1 / -1;
+}
+
+.form-group label {
+    font-size: 14px;
+    font-weight: 600;
+    color: #d1d5db;
+}
+
+.form-group input,
+.form-group textarea,
+.form-group select {
+    width: 100%;
+    padding: 12px 14px;
+    color: #f3f4f6;
+    background: #10131a;
+    border: 1px solid #343a46;
+    border-radius: 8px;
+    transition: 0.2s;
+}
+
+.form-group textarea {
+    min-height: 110px;
+    resize: vertical;
+}
+
+.form-group input:focus,
+.form-group textarea:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+}
+
+.form-actions {
+    grid-column: 1 / -1;
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 5px;
+}
+
+/* BOTÓN */
+
+.btn-primary {
+    padding: 12px 22px;
+    border: none;
+    border-radius: 8px;
+    background: #2563eb;
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.btn-primary:hover {
+    background: #1d4ed8;
+}
+
+.btn-primary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* MENSAJES */
+
+.mensaje {
+    grid-column: 1 / -1;
+    margin: 0;
+    padding: 12px 14px;
+    border-radius: 8px;
+    background: #202633;
+    border: 1px solid #343a46;
+    color: #d1d5db;
+}
+
+/* TABLA */
+
+.table-container {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.solicitudes-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.solicitudes-table th {
+    padding: 14px 12px;
+    text-align: left;
+    background: #11151d;
+    color: #9ca3af;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    border-bottom: 1px solid #303642;
+}
+
+.solicitudes-table td {
+    padding: 15px 12px;
+    color: #e5e7eb;
+    border-bottom: 1px solid #282d37;
+}
+
+.solicitudes-table tbody tr {
+    transition: 0.2s;
+}
+
+.solicitudes-table tbody tr:hover {
+    background: #20242d;
+}
+
+/* ETIQUETAS */
+
+.estado,
+.prioridad {
+    display: inline-block;
+    padding: 6px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.estado {
+    background: #172554;
+    color: #93c5fd;
+}
+
+.prioridad {
+    background: #3f2a12;
+    color: #fcd34d;
+}
+
+/* RESPONSIVE */
+
+@media (max-width: 768px) {
+    .solicitudes-page {
+        width: 94%;
+        padding-top: 24px;
+    }
+
+    .solicitud-form {
+        grid-template-columns: 1fr;
+    }
+
+    .form-group-full,
+    .form-actions {
+        grid-column: auto;
+    }
+
+    .form-actions {
+        justify-content: stretch;
+    }
+
+    .btn-primary {
+        width: 100%;
+    }
+
+    .page-header h1 {
+        font-size: 26px;
+    }
+
+    .form-card,
+    .table-card {
+        padding: 18px;
+    }
+}
+
+.btn-estado {
+    padding: 8px 12px;
+    border: 1px solid #3b82f6;
+    border-radius: 7px;
+    background: transparent;
+    color: #60a5fa;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s;
+    white-space: nowrap;
+}
+
+.btn-estado:hover {
+    background: #2563eb;
+    color: white;
+}
+
+.sin-accion {
+    color: #6b7280;
+    font-size: 12px;
+    font-weight: 600;
+}

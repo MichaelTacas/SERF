@@ -1,0 +1,16 @@
+CAPTURAS - SISTEMA DE GESTION DE SOPORTE TECNICO
+
+01. POST /api/clientes -> 201 Created
+02. GET /api/clientes -> 200 OK
+03. GET /api/clientes/999 -> 404 Not Found
+04. POST /api/clientes con datos invalidos -> 400 Bad Request
+05. POST /api/tecnicos -> 201 Created
+06. POST /api/tecnicos con datos invalidos -> 400 Bad Request
+07. POST /api/solicitudes -> 201 Created / estado PENDIENTE
+08. PUT /api/solicitudes/1 -> 200 OK / estado EN_PROCESO
+09. EXTRA - Spring Boot iniciado en puerto 8080
+10. EXTRA - Swagger con endpoints
+11. EXTRA - Maven BUILD SUCCESS
+12. POST /api/solicitudes con datos inválidos -> 400 Bad Request
+13. GET /api/solicitudes/prioridad/ALTA -> 200 OK
+14. GET /api/tecnicos/disponibles -> 200 OK
