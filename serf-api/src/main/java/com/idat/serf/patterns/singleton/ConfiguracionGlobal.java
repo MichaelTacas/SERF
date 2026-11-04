@@ -13,9 +13,17 @@ public final class ConfiguracionGlobal {
     private Moneda monedaCorporativa;
     private String formatoFecha;
 
+    // Tipo de cambio utilizado para convertir CNY a EUR.
+    // Valor configurable para fines del proyecto.
+    private BigDecimal tipoCambioCnyEur;
+
     private ConfiguracionGlobal() {
         this.monedaCorporativa = Moneda.EUR;
         this.formatoFecha = "dd/MM/yyyy";
+
+        // Ejemplo académico:
+        // 1 CNY = 0.13 EUR
+        this.tipoCambioCnyEur = new BigDecimal("0.13");
     }
 
     public static ConfiguracionGlobal getInstancia() {
@@ -38,10 +46,28 @@ public final class ConfiguracionGlobal {
         this.formatoFecha = formatoFecha;
     }
 
+    public BigDecimal getTipoCambioCnyEur() {
+        return tipoCambioCnyEur;
+    }
+
+    public void setTipoCambioCnyEur(BigDecimal tipoCambioCnyEur) {
+
+        if (tipoCambioCnyEur == null
+                || tipoCambioCnyEur.compareTo(BigDecimal.ZERO) <= 0) {
+
+            throw new IllegalArgumentException(
+                    "El tipo de cambio CNY a EUR debe ser mayor a cero"
+            );
+        }
+
+        this.tipoCambioCnyEur = tipoCambioCnyEur;
+    }
+
     public BigDecimal convertir(
             BigDecimal monto,
             BigDecimal tipoCambio
     ) {
+
         if (monto == null || tipoCambio == null) {
             throw new IllegalArgumentException(
                     "El monto y el tipo de cambio son obligatorios"
@@ -56,5 +82,13 @@ public final class ConfiguracionGlobal {
 
         return monto.multiply(tipoCambio)
                 .setScale(2, RoundingMode.HALF_UP);
+    }
+
+    public BigDecimal convertirCnyAEur(BigDecimal montoCny) {
+
+        return convertir(
+                montoCny,
+                tipoCambioCnyEur
+        );
     }
 }

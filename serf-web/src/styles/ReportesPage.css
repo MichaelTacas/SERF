@@ -102,15 +102,17 @@
     font-weight: 600;
 }
 
-.reporte-field input {
-    padding: 11px 12px;
-
-    background: #0f172a;
+.reporte-field input,
+.reporte-field select {
+    width: 100%;
+    padding: 12px 14px;
     border: 1px solid #334155;
     border-radius: 8px;
-
-    color: #f8fafc;
+    background: #0f172a;
+    color: #ffffff;
+    font-size: 14px;
     outline: none;
+    box-sizing: border-box;
 }
 
 .reporte-field input:focus {

@@ -4,11 +4,13 @@ import com.idat.serf.exception.RecursoNoEncontradoException;
 import com.idat.serf.exception.ReglaNegocioException;
 import com.idat.serf.model.Filial;
 import com.idat.serf.model.Producto;
+import com.idat.serf.patterns.singleton.ConfiguracionGlobal;
 import com.idat.serf.repository.FilialRepository;
 import com.idat.serf.repository.ProductoRepository;
 import com.idat.serf.service.ProductoService;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Service
@@ -36,8 +38,10 @@ public class ProductoServiceImpl implements ProductoService {
         }
 
         Filial filial = obtenerFilial(producto);
-
         producto.setFilial(filial);
+
+        // Conversión automática CNY -> EUR
+        calcularCostoImportacionEur(producto);
 
         return productoRepository.save(producto);
     }
@@ -89,7 +93,22 @@ public class ProductoServiceImpl implements ProductoService {
         existente.setNombre(producto.getNombre());
         existente.setDescripcion(producto.getDescripcion());
         existente.setCategoria(producto.getCategoria());
-        existente.setCostoImportacion(producto.getCostoImportacion());
+
+        // Costo recibido en CNY
+        existente.setCostoImportacion(
+                producto.getCostoImportacion()
+        );
+
+        // Conversión automática CNY -> EUR
+        BigDecimal costoEur =
+                ConfiguracionGlobal
+                        .getInstancia()
+                        .convertirCnyAEur(
+                                producto.getCostoImportacion()
+                        );
+
+        existente.setCostoImportacionEur(costoEur);
+
         existente.setPrecioVenta(producto.getPrecioVenta());
         existente.setProveedor(producto.getProveedor());
         existente.setFechaImportacion(producto.getFechaImportacion());
@@ -123,5 +142,25 @@ public class ProductoServiceImpl implements ProductoService {
                                         + producto.getFilial().getId()
                         )
                 );
+    }
+
+    private void calcularCostoImportacionEur(
+            Producto producto
+    ) {
+
+        if (producto.getCostoImportacion() == null) {
+            throw new ReglaNegocioException(
+                    "El costo de importación en CNY es obligatorio"
+            );
+        }
+
+        BigDecimal costoEur =
+                ConfiguracionGlobal
+                        .getInstancia()
+                        .convertirCnyAEur(
+                                producto.getCostoImportacion()
+                        );
+
+        producto.setCostoImportacionEur(costoEur);
     }
 }

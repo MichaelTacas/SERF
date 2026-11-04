@@ -460,7 +460,7 @@ export function ProductosPage() {
                         <div className="producto-field">
 
                             <label htmlFor="costoImportacion">
-                                Costo de importación
+                                Costo de importación (CNY)
                             </label>
 
                             <input
@@ -637,7 +637,10 @@ export function ProductosPage() {
                                 <th>Filial</th>
 
                                 {esAdministrador && (
-                                    <th>Costo</th>
+                                    <>
+                                        <th>Costo CNY</th>
+                                        <th>Costo EUR</th>
+                                    </>
                                 )}
 
                                 <th>Precio</th>
@@ -674,11 +677,19 @@ export function ProductosPage() {
                                         </td>
 
                                         {esAdministrador && (
-                                            <td>
-                                                {Number(
-                                                    producto.costoImportacion
-                                                ).toFixed(2)}
-                                            </td>
+                                            <>
+                                                <td>
+                                                    {Number(
+                                                        producto.costoImportacion
+                                                    ).toFixed(2)} CNY
+                                                </td>
+
+                                                <td>
+                                                    {Number(
+                                                        producto.costoImportacionEur
+                                                    ).toFixed(2)} EUR
+                                                </td>
+                                            </>
                                         )}
 
                                         <td>

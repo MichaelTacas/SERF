@@ -28,6 +28,10 @@ public class ReporteController {
         this.reporteService = reporteService;
     }
 
+    // =====================================================
+    // REPORTE MENSUAL
+    // =====================================================
+
     @PostMapping(
             value = "/mensual",
             produces = MediaType.TEXT_PLAIN_VALUE
@@ -49,6 +53,62 @@ public class ReporteController {
 
         return ResponseEntity.ok(contenido);
     }
+
+    // =====================================================
+    // REPORTE TRIMESTRAL
+    // =====================================================
+
+    @PostMapping(
+            value = "/trimestral",
+            produces = MediaType.TEXT_PLAIN_VALUE
+    )
+    public ResponseEntity<String> generarTrimestral(
+            @Valid @RequestBody ReporteRequest request,
+            Authentication authentication
+    ) {
+
+        String responsable = authentication.getName();
+
+        String contenido =
+                reporteFacade.generarReporteTrimestral(
+                        request.getPais(),
+                        request.getIngresos(),
+                        request.getGastos(),
+                        responsable
+                );
+
+        return ResponseEntity.ok(contenido);
+    }
+
+    // =====================================================
+    // REPORTE ANUAL
+    // =====================================================
+
+    @PostMapping(
+            value = "/anual",
+            produces = MediaType.TEXT_PLAIN_VALUE
+    )
+    public ResponseEntity<String> generarAnual(
+            @Valid @RequestBody ReporteRequest request,
+            Authentication authentication
+    ) {
+
+        String responsable = authentication.getName();
+
+        String contenido =
+                reporteFacade.generarReporteAnual(
+                        request.getPais(),
+                        request.getIngresos(),
+                        request.getGastos(),
+                        responsable
+                );
+
+        return ResponseEntity.ok(contenido);
+    }
+
+    // =====================================================
+    // REPORTE MENSUAL AUTOMÁTICO
+    // =====================================================
 
     @PostMapping(
             value = "/mensual/automatico",

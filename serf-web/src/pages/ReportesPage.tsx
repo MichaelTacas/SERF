@@ -19,6 +19,11 @@ type TipoReporte =
     | 'automatico'
     | 'manual';
 
+type PeriodoReporte =
+    | 'mensual'
+    | 'trimestral'
+    | 'anual';
+
 const reporteManualInicial: ReporteRequest = {
     pais: '',
     ingresos: '',
@@ -35,6 +40,9 @@ export function ReportesPage() {
 
     const [tipoReporte, setTipoReporte] =
         useState<TipoReporte>('automatico');
+
+    const [periodoReporte, setPeriodoReporte] =
+        useState<PeriodoReporte>('mensual');
 
     const [reporteManual, setReporteManual] =
         useState<ReporteRequest>(
@@ -59,15 +67,14 @@ export function ReportesPage() {
         useState('');
 
     /*
-     * El responsable ya no se escribe manualmente.
-     * Se obtiene de la sesión actual.
+     * El responsable se obtiene
+     * automáticamente de la sesión.
      */
     const usuarioAutenticado =
         authService.obtenerUsuario();
 
     const responsable =
         usuarioAutenticado?.email ?? '';
-
 
     const manejarManual = (
         evento: ChangeEvent<HTMLInputElement>
@@ -82,7 +89,6 @@ export function ReportesPage() {
         }));
     };
 
-
     const manejarAutomatico = (
         evento: ChangeEvent<HTMLInputElement>
     ) => {
@@ -95,7 +101,6 @@ export function ReportesPage() {
             [name]: value,
         }));
     };
-
 
     const generarManual = async (
         evento: FormEvent<HTMLFormElement>
@@ -123,10 +128,35 @@ export function ReportesPage() {
                 responsable,
             };
 
-            const resultado =
-                await reporteService.generarMensual(
-                    datos
-                );
+            let resultado: string;
+
+            switch (periodoReporte) {
+
+                case 'trimestral':
+
+                    resultado =
+                        await reporteService
+                            .generarTrimestral(datos);
+
+                    break;
+
+                case 'anual':
+
+                    resultado =
+                        await reporteService
+                            .generarAnual(datos);
+
+                    break;
+
+                case 'mensual':
+                default:
+
+                    resultado =
+                        await reporteService
+                            .generarMensual(datos);
+
+                    break;
+            }
 
             setContenido(resultado);
 
@@ -141,10 +171,8 @@ export function ReportesPage() {
         } finally {
 
             setGenerando(false);
-
         }
     };
-
 
     const generarAutomatico = async (
         evento: FormEvent<HTMLFormElement>
@@ -191,10 +219,8 @@ export function ReportesPage() {
         } finally {
 
             setGenerando(false);
-
         }
     };
-
 
     const cambiarTipo = (
         tipo: TipoReporte
@@ -205,6 +231,21 @@ export function ReportesPage() {
         setContenido('');
     };
 
+    const obtenerNombrePeriodo = () => {
+
+        switch (periodoReporte) {
+
+            case 'trimestral':
+                return 'trimestral';
+
+            case 'anual':
+                return 'anual';
+
+            case 'mensual':
+            default:
+                return 'mensual';
+        }
+    };
 
     return (
         <main className="reportes-page">
@@ -213,23 +254,22 @@ export function ReportesPage() {
 
                 <div>
 
-          <span>
-            SERF
-          </span>
+                    <span>
+                        SERF
+                    </span>
 
                     <h2>
                         Reportes financieros
                     </h2>
 
                     <p>
-                        Genera reportes mensuales
+                        Genera reportes financieros
                         manuales o automáticos.
                     </p>
 
                 </div>
 
             </section>
-
 
             <section className="reportes-selector">
 
@@ -247,7 +287,6 @@ export function ReportesPage() {
                     Reporte automático
                 </button>
 
-
                 <button
                     type="button"
                     className={
@@ -264,7 +303,6 @@ export function ReportesPage() {
 
             </section>
 
-
             {error && (
 
                 <div className="reportes-error">
@@ -272,7 +310,6 @@ export function ReportesPage() {
                 </div>
 
             )}
-
 
             {tipoReporte === 'automatico' ? (
 
@@ -291,7 +328,6 @@ export function ReportesPage() {
                         </p>
 
                     </div>
-
 
                     <form
                         className="reporte-form"
@@ -319,7 +355,6 @@ export function ReportesPage() {
 
                         </div>
 
-
                         <div className="reporte-field">
 
                             <label htmlFor="responsableAutomatico">
@@ -334,7 +369,6 @@ export function ReportesPage() {
                             />
 
                         </div>
-
 
                         <div className="reporte-form-actions">
 
@@ -360,22 +394,51 @@ export function ReportesPage() {
                     <div className="reporte-form-title">
 
                         <h3>
-                            Reporte mensual manual
+                            Reporte {obtenerNombrePeriodo()} manual
                         </h3>
 
                         <p>
-                            Ingresa manualmente los valores
-                            financieros que formarán parte
-                            del reporte.
+                            Selecciona el periodo e ingresa
+                            los valores financieros que formarán
+                            parte del reporte.
                         </p>
 
                     </div>
-
 
                     <form
                         className="reporte-form"
                         onSubmit={generarManual}
                     >
+
+                        <div className="reporte-field">
+
+                            <label htmlFor="periodoReporte">
+                                Tipo de reporte
+                            </label>
+
+                            <select
+                                id="periodoReporte"
+                                value={periodoReporte}
+                                onChange={(evento) =>
+                                    setPeriodoReporte(evento.target.value as PeriodoReporte)
+                                }
+                            >
+
+                                <option value="mensual">
+                                    Mensual
+                                </option>
+
+                                <option value="trimestral">
+                                    Trimestral
+                                </option>
+
+                                <option value="anual">
+                                    Anual
+                                </option>
+
+                            </select>
+
+                        </div>
 
                         <div className="reporte-field">
 
@@ -398,7 +461,6 @@ export function ReportesPage() {
 
                         </div>
 
-
                         <div className="reporte-field">
 
                             <label htmlFor="responsableManual">
@@ -414,7 +476,6 @@ export function ReportesPage() {
 
                         </div>
 
-
                         <div className="reporte-field">
 
                             <label htmlFor="ingresos">
@@ -424,6 +485,9 @@ export function ReportesPage() {
                             <input
                                 id="ingresos"
                                 name="ingresos"
+                                type="number"
+                                min="0"
+                                step="0.01"
                                 value={
                                     reporteManual.ingresos
                                 }
@@ -436,7 +500,6 @@ export function ReportesPage() {
 
                         </div>
 
-
                         <div className="reporte-field">
 
                             <label htmlFor="gastos">
@@ -446,6 +509,9 @@ export function ReportesPage() {
                             <input
                                 id="gastos"
                                 name="gastos"
+                                type="number"
+                                min="0"
+                                step="0.01"
                                 value={
                                     reporteManual.gastos
                                 }
@@ -458,7 +524,6 @@ export function ReportesPage() {
 
                         </div>
 
-
                         <div className="reporte-form-actions">
 
                             <button
@@ -467,7 +532,7 @@ export function ReportesPage() {
                             >
                                 {generando
                                     ? 'Generando...'
-                                    : 'Generar reporte manual'}
+                                    : `Generar reporte ${obtenerNombrePeriodo()}`}
                             </button>
 
                         </div>
@@ -478,7 +543,6 @@ export function ReportesPage() {
 
             )}
 
-
             {contenido && (
 
                 <section className="reporte-resultado">
@@ -487,16 +551,15 @@ export function ReportesPage() {
 
                         <div>
 
-              <span>
-                REPORTE GENERADO
-              </span>
+                            <span>
+                                REPORTE GENERADO
+                            </span>
 
                             <h3>
                                 Resultado
                             </h3>
 
                         </div>
-
 
                         <button
                             type="button"
@@ -509,10 +572,9 @@ export function ReportesPage() {
 
                     </div>
 
-
                     <pre>
-            {contenido}
-          </pre>
+                        {contenido}
+                    </pre>
 
                 </section>
 

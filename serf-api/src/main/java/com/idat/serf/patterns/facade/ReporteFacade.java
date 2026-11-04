@@ -1,6 +1,5 @@
 package com.idat.serf.patterns.facade;
 
-import com.idat.serf.model.TipoReporte;
 import com.idat.serf.patterns.builder.ReporteFinanciero;
 import com.idat.serf.patterns.builder.ReporteFinancieroBuilder;
 import com.idat.serf.patterns.composite.ElementoReporte;
@@ -16,26 +15,103 @@ import org.springframework.stereotype.Service;
 @Service
 public class ReporteFacade {
 
-    private final PlantillaReporte plantillaBase;
+    private final PlantillaReporte plantillaMensualBase;
+    private final PlantillaReporte plantillaTrimestralBase;
+    private final PlantillaReporte plantillaAnualBase;
 
     public ReporteFacade() {
 
-        this.plantillaBase = new PlantillaReporte(
-                "Reporte Financiero Corporativo",
-                "Corporativo",
-                TipoReporte.FINANCIERO
-        );
+        // PROTOTYPE - Plantillas base
+        this.plantillaMensualBase =
+                PlantillaReporte.crearPlantillaMensualIngresos(
+                        "Corporativo"
+                );
 
-        plantillaBase.agregarSeccionBase("Ingresos");
-        plantillaBase.agregarSeccionBase("Gastos");
-        plantillaBase.agregarSeccionBase("Inventario");
+        this.plantillaTrimestralBase =
+                PlantillaReporte.crearPlantillaTrimestral(
+                        "Corporativo"
+                );
+
+        this.plantillaAnualBase =
+                PlantillaReporte.crearPlantillaAnualConsolidado(
+                        "Corporativo"
+                );
     }
+
+    // =====================================================
+    // REPORTE MENSUAL
+    // =====================================================
 
     public String generarReporteMensual(
             String pais,
             String ingresos,
             String gastos,
             String responsable
+    ) {
+
+        return generarReporte(
+                plantillaMensualBase,
+                pais,
+                ingresos,
+                gastos,
+                responsable,
+                "MENSUAL"
+        );
+    }
+
+    // =====================================================
+    // REPORTE TRIMESTRAL
+    // =====================================================
+
+    public String generarReporteTrimestral(
+            String pais,
+            String ingresos,
+            String gastos,
+            String responsable
+    ) {
+
+        return generarReporte(
+                plantillaTrimestralBase,
+                pais,
+                ingresos,
+                gastos,
+                responsable,
+                "TRIMESTRAL"
+        );
+    }
+
+    // =====================================================
+    // REPORTE ANUAL
+    // =====================================================
+
+    public String generarReporteAnual(
+            String pais,
+            String ingresos,
+            String gastos,
+            String responsable
+    ) {
+
+        return generarReporte(
+                plantillaAnualBase,
+                pais,
+                ingresos,
+                gastos,
+                responsable,
+                "ANUAL"
+        );
+    }
+
+    // =====================================================
+    // GENERACIÓN GENERAL DEL REPORTE
+    // =====================================================
+
+    private String generarReporte(
+            PlantillaReporte plantillaBase,
+            String pais,
+            String ingresos,
+            String gastos,
+            String responsable,
+            String periodo
     ) {
 
         // 1. SINGLETON
@@ -47,8 +123,9 @@ public class ReporteFacade {
                 plantillaBase.clonar();
 
         plantilla.setPais(pais);
+
         plantilla.setTitulo(
-                "Reporte Mensual - " + pais
+                plantilla.getTitulo() + " - " + pais
         );
 
         // 3. COMPOSITE
@@ -61,8 +138,7 @@ public class ReporteFacade {
                 new ElementoReporte(
                         "Ingresos",
                         ingresos + " "
-                                + configuracion
-                                .getMonedaCorporativa()
+                                + configuracion.getMonedaCorporativa()
                 )
         );
 
@@ -70,8 +146,7 @@ public class ReporteFacade {
                 new ElementoReporte(
                         "Gastos",
                         gastos + " "
-                                + configuracion
-                                .getMonedaCorporativa()
+                                + configuracion.getMonedaCorporativa()
                 )
         );
 
@@ -94,8 +169,7 @@ public class ReporteFacade {
                                 "FinanCorp S.A. | País: "
                                         + pais
                                         + " | Moneda corporativa: "
-                                        + configuracion
-                                        .getMonedaCorporativa()
+                                        + configuracion.getMonedaCorporativa()
                         )
                         .agregarSeccion(
                                 "Detalle",
@@ -107,7 +181,10 @@ public class ReporteFacade {
                         .construir();
 
         String contenido =
-                convertirATexto(reporte);
+                convertirATexto(
+                        reporte,
+                        periodo
+                );
 
         // 5. DECORATOR
         ReporteExportable reporteFinal =
@@ -128,21 +205,43 @@ public class ReporteFacade {
         return reporteFinal.generar();
     }
 
+    // =====================================================
+    // CONVERSIÓN DEL REPORTE
+    // =====================================================
+
     private String convertirATexto(
-            ReporteFinanciero reporte
+            ReporteFinanciero reporte,
+            String periodo
     ) {
 
-        StringBuilder contenido = new StringBuilder();
+        StringBuilder contenido =
+                new StringBuilder();
 
-        contenido.append("========================================\n");
-        contenido.append("SERF - REPORTE FINANCIERO MENSUAL\n");
-        contenido.append("========================================\n\n");
+        contenido.append(
+                "========================================\n"
+        );
 
-        contenido.append(reporte.getEncabezado())
-                .append("\n\n");
+        contenido.append(
+                "SERF - REPORTE FINANCIERO "
+        );
 
-        contenido.append("1. INFORMACIÓN FINANCIERA\n");
-        contenido.append("----------------------------------------\n");
+        contenido.append(periodo);
+
+        contenido.append(
+                "\n========================================\n\n"
+        );
+
+        contenido.append(
+                reporte.getEncabezado()
+        ).append("\n\n");
+
+        contenido.append(
+                "1. INFORMACIÓN FINANCIERA\n"
+        );
+
+        contenido.append(
+                "----------------------------------------\n"
+        );
 
         for (String seccion : reporte.getSecciones()) {
             contenido.append(seccion)
@@ -151,10 +250,17 @@ public class ReporteFacade {
 
         contenido.append("\n");
 
-        contenido.append("2. CONCLUSIÓN\n");
-        contenido.append("----------------------------------------\n");
-        contenido.append(reporte.getConclusion())
-                .append("\n");
+        contenido.append(
+                "2. CONCLUSIÓN\n"
+        );
+
+        contenido.append(
+                "----------------------------------------\n"
+        );
+
+        contenido.append(
+                reporte.getConclusion()
+        ).append("\n");
 
         return contenido.toString();
     }

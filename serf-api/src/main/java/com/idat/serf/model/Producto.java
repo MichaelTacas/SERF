@@ -37,10 +37,25 @@ public class Producto {
     @Column(nullable = false, length = 30)
     private CategoriaProducto categoria;
 
-    @NotNull(message = "El costo de importación es obligatorio")
+    // Costo original de importación expresado en yuanes chinos (CNY)
+    @NotNull(message = "El costo de importación en CNY es obligatorio")
     @DecimalMin(value = "0.0", inclusive = true)
-    @Column(nullable = false, precision = 12, scale = 2)
+    @Column(
+            name = "costo_importacion",
+            nullable = false,
+            precision = 12,
+            scale = 2
+    )
     private BigDecimal costoImportacion;
+
+    // Costo convertido automáticamente a la moneda corporativa EUR
+    @DecimalMin(value = "0.0", inclusive = true)
+    @Column(
+            name = "costo_importacion_eur",
+            precision = 12,
+            scale = 2
+    )
+    private BigDecimal costoImportacionEur;
 
     @NotNull(message = "El precio de venta es obligatorio")
     @DecimalMin(value = "0.0", inclusive = true)
@@ -74,6 +89,7 @@ public class Producto {
             String descripcion,
             CategoriaProducto categoria,
             BigDecimal costoImportacion,
+            BigDecimal costoImportacionEur,
             BigDecimal precioVenta,
             String proveedor,
             LocalDate fechaImportacion,
@@ -85,6 +101,7 @@ public class Producto {
         this.descripcion = descripcion;
         this.categoria = categoria;
         this.costoImportacion = costoImportacion;
+        this.costoImportacionEur = costoImportacionEur;
         this.precioVenta = precioVenta;
         this.proveedor = proveedor;
         this.fechaImportacion = fechaImportacion;
@@ -136,6 +153,16 @@ public class Producto {
         this.costoImportacion = costoImportacion;
     }
 
+    public BigDecimal getCostoImportacionEur() {
+        return costoImportacionEur;
+    }
+
+    public void setCostoImportacionEur(
+            BigDecimal costoImportacionEur
+    ) {
+        this.costoImportacionEur = costoImportacionEur;
+    }
+
     public BigDecimal getPrecioVenta() {
         return precioVenta;
     }
@@ -156,7 +183,9 @@ public class Producto {
         return fechaImportacion;
     }
 
-    public void setFechaImportacion(LocalDate fechaImportacion) {
+    public void setFechaImportacion(
+            LocalDate fechaImportacion
+    ) {
         this.fechaImportacion = fechaImportacion;
     }
 

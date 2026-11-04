@@ -18,4 +18,5 @@ export interface Producto {
     stock: number;
     filialId: number;
     filialNombre: string;
+    costoImportacionEur: number;
 }
