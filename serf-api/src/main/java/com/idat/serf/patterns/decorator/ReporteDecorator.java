@@ -1,5 +1,7 @@
 package com.idat.serf.patterns.decorator;
 
+import java.util.Objects;
+
 public abstract class ReporteDecorator
         implements ReporteExportable {
 
@@ -8,7 +10,11 @@ public abstract class ReporteDecorator
     protected ReporteDecorator(
             ReporteExportable reporte
     ) {
-        this.reporte = reporte;
+
+        this.reporte = Objects.requireNonNull(
+                reporte,
+                "El reporte a decorar no puede ser nulo"
+        );
     }
 
     @Override

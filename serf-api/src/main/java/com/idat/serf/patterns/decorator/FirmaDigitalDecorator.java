@@ -20,6 +20,8 @@ public class FirmaDigitalDecorator
                 + "Firma digital: "
                 + responsable
                 + "\n"
-                + "========================================";
+                + "========================================================\n"
+                + "          Generado automáticamente por SERF\n"
+                + "========================================================";
     }
 }

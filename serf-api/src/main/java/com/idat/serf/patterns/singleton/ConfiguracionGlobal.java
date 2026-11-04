@@ -13,17 +13,20 @@ public final class ConfiguracionGlobal {
     private Moneda monedaCorporativa;
     private String formatoFecha;
 
-    // Tipo de cambio utilizado para convertir CNY a EUR.
-    // Valor configurable para fines del proyecto.
+    // Tipos de cambio académicos configurables hacia EUR.
     private BigDecimal tipoCambioCnyEur;
+    private BigDecimal tipoCambioPenEur;
+    private BigDecimal tipoCambioUsdEur;
 
     private ConfiguracionGlobal() {
+
         this.monedaCorporativa = Moneda.EUR;
         this.formatoFecha = "dd/MM/yyyy";
 
-        // Ejemplo académico:
-        // 1 CNY = 0.13 EUR
+        // Valores académicos para demostrar el funcionamiento.
         this.tipoCambioCnyEur = new BigDecimal("0.13");
+        this.tipoCambioPenEur = new BigDecimal("0.23");
+        this.tipoCambioUsdEur = new BigDecimal("0.92");
     }
 
     public static ConfiguracionGlobal getInstancia() {
@@ -51,16 +54,37 @@ public final class ConfiguracionGlobal {
     }
 
     public void setTipoCambioCnyEur(BigDecimal tipoCambioCnyEur) {
+        validarTipoCambio(tipoCambioCnyEur);
+        this.tipoCambioCnyEur = tipoCambioCnyEur;
+    }
 
-        if (tipoCambioCnyEur == null
-                || tipoCambioCnyEur.compareTo(BigDecimal.ZERO) <= 0) {
+    public BigDecimal getTipoCambioPenEur() {
+        return tipoCambioPenEur;
+    }
+
+    public void setTipoCambioPenEur(BigDecimal tipoCambioPenEur) {
+        validarTipoCambio(tipoCambioPenEur);
+        this.tipoCambioPenEur = tipoCambioPenEur;
+    }
+
+    public BigDecimal getTipoCambioUsdEur() {
+        return tipoCambioUsdEur;
+    }
+
+    public void setTipoCambioUsdEur(BigDecimal tipoCambioUsdEur) {
+        validarTipoCambio(tipoCambioUsdEur);
+        this.tipoCambioUsdEur = tipoCambioUsdEur;
+    }
+
+    private void validarTipoCambio(BigDecimal tipoCambio) {
+
+        if (tipoCambio == null
+                || tipoCambio.compareTo(BigDecimal.ZERO) <= 0) {
 
             throw new IllegalArgumentException(
-                    "El tipo de cambio CNY a EUR debe ser mayor a cero"
+                    "El tipo de cambio debe ser mayor a cero"
             );
         }
-
-        this.tipoCambioCnyEur = tipoCambioCnyEur;
     }
 
     public BigDecimal convertir(
@@ -74,13 +98,10 @@ public final class ConfiguracionGlobal {
             );
         }
 
-        if (tipoCambio.compareTo(BigDecimal.ZERO) <= 0) {
-            throw new IllegalArgumentException(
-                    "El tipo de cambio debe ser mayor a cero"
-            );
-        }
+        validarTipoCambio(tipoCambio);
 
-        return monto.multiply(tipoCambio)
+        return monto
+                .multiply(tipoCambio)
                 .setScale(2, RoundingMode.HALF_UP);
     }
 
@@ -90,5 +111,51 @@ public final class ConfiguracionGlobal {
                 montoCny,
                 tipoCambioCnyEur
         );
+    }
+
+    public BigDecimal convertirPenAEur(BigDecimal montoPen) {
+
+        return convertir(
+                montoPen,
+                tipoCambioPenEur
+        );
+    }
+
+    public BigDecimal convertirUsdAEur(BigDecimal montoUsd) {
+
+        return convertir(
+                montoUsd,
+                tipoCambioUsdEur
+        );
+    }
+
+    public BigDecimal convertirAEur(
+            BigDecimal monto,
+            Moneda monedaOrigen
+    ) {
+
+        if (monto == null || monedaOrigen == null) {
+            throw new IllegalArgumentException(
+                    "El monto y la moneda de origen son obligatorios"
+            );
+        }
+
+        return switch (monedaOrigen) {
+
+            case EUR ->
+                    monto.setScale(
+                            2,
+                            RoundingMode.HALF_UP
+                    );
+
+            case PEN ->
+                    convertirPenAEur(monto);
+
+            case USD ->
+                    convertirUsdAEur(monto);
+
+            case CNY ->
+                    convertirCnyAEur(monto);
+        };
     }
 }

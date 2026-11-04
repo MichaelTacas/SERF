@@ -31,9 +31,13 @@ public class ReporteFinancieroBuilder
             String contenido
     ) {
 
-        reporte.agregarSeccion(
-                titulo + ": " + contenido
-        );
+        String seccion =
+                titulo
+                        + "\n"
+                        + "----------------------------------------\n"
+                        + contenido;
+
+        reporte.agregarSeccion(seccion);
 
         return this;
     }

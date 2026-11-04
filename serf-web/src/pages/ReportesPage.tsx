@@ -1,4 +1,6 @@
 import {
+    useCallback,
+    useEffect,
     useState,
 } from 'react';
 
@@ -7,10 +9,12 @@ import type {
     FormEvent,
 } from 'react';
 
+import type { Cliente } from '../interfaces/Cliente';
 import type { ReporteRequest } from '../interfaces/ReporteRequest';
 import type { ReporteAutomaticoRequest } from '../interfaces/ReporteAutomaticoRequest';
 
 import { reporteService } from '../services/reporteService';
+import { clienteService } from '../services/clienteService';
 import { authService } from '../services/authService';
 
 import '../styles/ReportesPage.css';
@@ -24,6 +28,9 @@ type PeriodoReporte =
     | 'trimestral'
     | 'anual';
 
+type PeriodoAutomatico =
+    ReporteAutomaticoRequest['periodo'];
+
 const reporteManualInicial: ReporteRequest = {
     pais: '',
     ingresos: '',
@@ -33,8 +40,27 @@ const reporteManualInicial: ReporteRequest = {
 
 const reporteAutomaticoInicial: ReporteAutomaticoRequest = {
     pais: '',
-    responsable: '',
+    clienteId: 0,
+    periodo: 'MENSUAL',
 };
+
+function esPeriodoManual(
+    valor: string
+): valor is PeriodoReporte {
+
+    return valor === 'mensual'
+        || valor === 'trimestral'
+        || valor === 'anual';
+}
+
+function esPeriodoAutomatico(
+    valor: string
+): valor is PeriodoAutomatico {
+
+    return valor === 'MENSUAL'
+        || valor === 'TRIMESTRAL'
+        || valor === 'ANUAL';
+}
 
 export function ReportesPage() {
 
@@ -52,10 +78,15 @@ export function ReportesPage() {
     const [
         reporteAutomatico,
         setReporteAutomatico,
-    ] =
-        useState<ReporteAutomaticoRequest>(
-            reporteAutomaticoInicial
-        );
+    ] = useState<ReporteAutomaticoRequest>(
+        reporteAutomaticoInicial
+    );
+
+    const [clientes, setClientes] =
+        useState<Cliente[]>([]);
+
+    const [cargandoClientes, setCargandoClientes] =
+        useState(false);
 
     const [contenido, setContenido] =
         useState('');
@@ -66,15 +97,58 @@ export function ReportesPage() {
     const [error, setError] =
         useState('');
 
-    /*
-     * El responsable se obtiene
-     * automáticamente de la sesión.
-     */
+    // =====================================================
+    // USUARIO AUTENTICADO
+    // =====================================================
+
     const usuarioAutenticado =
         authService.obtenerUsuario();
 
     const responsable =
         usuarioAutenticado?.email ?? '';
+
+    // =====================================================
+    // CARGAR CLIENTES
+    // =====================================================
+
+    const cargarClientes = useCallback(
+        async () => {
+
+            try {
+
+                setCargandoClientes(true);
+                setError('');
+
+                const datos =
+                    await clienteService.listar();
+
+                setClientes(datos);
+
+            } catch (err) {
+
+                setError(
+                    err instanceof Error
+                        ? err.message
+                        : 'No se pudieron cargar los clientes.'
+                );
+
+            } finally {
+
+                setCargandoClientes(false);
+            }
+        },
+        []
+    );
+
+    useEffect(() => {
+
+        void cargarClientes();
+
+    }, [cargarClientes]);
+
+    // =====================================================
+    // FORMULARIO MANUAL
+    // =====================================================
 
     const manejarManual = (
         evento: ChangeEvent<HTMLInputElement>
@@ -83,24 +157,100 @@ export function ReportesPage() {
         const { name, value } =
             evento.target;
 
-        setReporteManual((actual) => ({
-            ...actual,
-            [name]: value,
-        }));
+        setReporteManual(
+            (actual) => ({
+                ...actual,
+                [name]: value,
+            })
+        );
     };
 
-    const manejarAutomatico = (
+    // =====================================================
+    // PAÍS AUTOMÁTICO
+    // =====================================================
+
+    const manejarPaisAutomatico = (
         evento: ChangeEvent<HTMLInputElement>
     ) => {
 
-        const { name, value } =
-            evento.target;
+        const valor =
+            evento.target.value;
 
-        setReporteAutomatico((actual) => ({
-            ...actual,
-            [name]: value,
-        }));
+        setReporteAutomatico(
+            (actual) => ({
+                ...actual,
+                pais: valor,
+            })
+        );
     };
+
+    // =====================================================
+    // CLIENTE AUTOMÁTICO
+    // =====================================================
+
+    const manejarClienteAutomatico = (
+        evento: ChangeEvent<HTMLSelectElement>
+    ) => {
+
+        const clienteId =
+            Number(
+                evento.target.value
+            );
+
+        setReporteAutomatico(
+            (actual) => ({
+                ...actual,
+                clienteId,
+            })
+        );
+    };
+
+    // =====================================================
+    // PERIODO AUTOMÁTICO
+    // =====================================================
+
+    const manejarPeriodoAutomatico = (
+        evento: ChangeEvent<HTMLSelectElement>
+    ) => {
+
+        const valor =
+            evento.target.value;
+
+        if (!esPeriodoAutomatico(valor)) {
+            return;
+        }
+
+        setReporteAutomatico(
+            (actual) => ({
+                ...actual,
+                periodo: valor,
+            })
+        );
+    };
+
+    // =====================================================
+    // PERIODO MANUAL
+    // =====================================================
+
+    const manejarPeriodoManual = (
+        evento: ChangeEvent<HTMLSelectElement>
+    ) => {
+
+        const valor =
+            evento.target.value;
+
+        if (!esPeriodoManual(valor)) {
+            return;
+        }
+
+        setPeriodoReporte(
+            valor
+        );
+    };
+
+    // =====================================================
+    // GENERAR REPORTE MANUAL
+    // =====================================================
 
     const generarManual = async (
         evento: FormEvent<HTMLFormElement>
@@ -136,7 +286,9 @@ export function ReportesPage() {
 
                     resultado =
                         await reporteService
-                            .generarTrimestral(datos);
+                            .generarTrimestral(
+                                datos
+                            );
 
                     break;
 
@@ -144,7 +296,9 @@ export function ReportesPage() {
 
                     resultado =
                         await reporteService
-                            .generarAnual(datos);
+                            .generarAnual(
+                                datos
+                            );
 
                     break;
 
@@ -153,12 +307,16 @@ export function ReportesPage() {
 
                     resultado =
                         await reporteService
-                            .generarMensual(datos);
+                            .generarMensual(
+                                datos
+                            );
 
                     break;
             }
 
-            setContenido(resultado);
+            setContenido(
+                resultado
+            );
 
         } catch (err) {
 
@@ -173,6 +331,10 @@ export function ReportesPage() {
             setGenerando(false);
         }
     };
+
+    // =====================================================
+    // GENERAR REPORTE AUTOMÁTICO
+    // =====================================================
 
     const generarAutomatico = async (
         evento: FormEvent<HTMLFormElement>
@@ -189,24 +351,39 @@ export function ReportesPage() {
             return;
         }
 
+        if (!reporteAutomatico.pais.trim()) {
+
+            setError(
+                'Debes ingresar un país.'
+            );
+
+            return;
+        }
+
+        if (reporteAutomatico.clienteId <= 0) {
+
+            setError(
+                'Debes seleccionar un cliente.'
+            );
+
+            return;
+        }
+
         try {
 
             setGenerando(true);
             setError('');
             setContenido('');
 
-            const datos: ReporteAutomaticoRequest = {
-                ...reporteAutomatico,
-                responsable,
-            };
-
             const resultado =
                 await reporteService
-                    .generarMensualAutomatico(
-                        datos
+                    .generarAutomatico(
+                        reporteAutomatico
                     );
 
-            setContenido(resultado);
+            setContenido(
+                resultado
+            );
 
         } catch (err) {
 
@@ -222,16 +399,27 @@ export function ReportesPage() {
         }
     };
 
+    // =====================================================
+    // CAMBIAR TIPO DE REPORTE
+    // =====================================================
+
     const cambiarTipo = (
         tipo: TipoReporte
     ) => {
 
-        setTipoReporte(tipo);
+        setTipoReporte(
+            tipo
+        );
+
         setError('');
         setContenido('');
     };
 
-    const obtenerNombrePeriodo = () => {
+    // =====================================================
+    // NOMBRE PERIODO MANUAL
+    // =====================================================
+
+    const obtenerNombrePeriodoManual = () => {
 
         switch (periodoReporte) {
 
@@ -247,8 +435,31 @@ export function ReportesPage() {
         }
     };
 
+    // =====================================================
+    // NOMBRE PERIODO AUTOMÁTICO
+    // =====================================================
+
+    const obtenerNombrePeriodoAutomatico = () => {
+
+        switch (reporteAutomatico.periodo) {
+
+            case 'TRIMESTRAL':
+                return 'trimestral';
+
+            case 'ANUAL':
+                return 'anual';
+
+            case 'MENSUAL':
+            default:
+                return 'mensual';
+        }
+    };
+
     return (
+
         <main className="reportes-page">
+
+            {/* ENCABEZADO */}
 
             <section className="reportes-header">
 
@@ -271,6 +482,8 @@ export function ReportesPage() {
 
             </section>
 
+            {/* SELECTOR */}
+
             <section className="reportes-selector">
 
                 <button
@@ -281,7 +494,9 @@ export function ReportesPage() {
                             : 'reporte-tab'
                     }
                     onClick={() =>
-                        cambiarTipo('automatico')
+                        cambiarTipo(
+                            'automatico'
+                        )
                     }
                 >
                     Reporte automático
@@ -295,13 +510,17 @@ export function ReportesPage() {
                             : 'reporte-tab'
                     }
                     onClick={() =>
-                        cambiarTipo('manual')
+                        cambiarTipo(
+                            'manual'
+                        )
                     }
                 >
                     Reporte manual
                 </button>
 
             </section>
+
+            {/* ERROR */}
 
             {error && (
 
@@ -311,6 +530,10 @@ export function ReportesPage() {
 
             )}
 
+            {/* =============================================
+                REPORTE AUTOMÁTICO
+            ============================================= */}
+
             {tipoReporte === 'automatico' ? (
 
                 <section className="reporte-form-container">
@@ -318,25 +541,34 @@ export function ReportesPage() {
                     <div className="reporte-form-title">
 
                         <h3>
-                            Reporte mensual automático
+                            Reporte {
+                            obtenerNombrePeriodoAutomatico()
+                        } automático
                         </h3>
 
                         <p>
-                            Los ingresos y gastos se obtendrán
-                            automáticamente desde la información
-                            registrada en SERF.
+                            Selecciona el país, cliente y periodo.
+                            SERF calculará automáticamente los
+                            valores financieros utilizando las
+                            compras registradas.
                         </p>
 
                     </div>
 
                     <form
                         className="reporte-form"
-                        onSubmit={generarAutomatico}
+                        onSubmit={
+                            generarAutomatico
+                        }
                     >
+
+                        {/* PAÍS */}
 
                         <div className="reporte-field">
 
-                            <label htmlFor="paisAutomatico">
+                            <label
+                                htmlFor="paisAutomatico"
+                            >
                                 País
                             </label>
 
@@ -347,7 +579,7 @@ export function ReportesPage() {
                                     reporteAutomatico.pais
                                 }
                                 onChange={
-                                    manejarAutomatico
+                                    manejarPaisAutomatico
                                 }
                                 placeholder="Ejemplo: Perú"
                                 required
@@ -355,30 +587,133 @@ export function ReportesPage() {
 
                         </div>
 
+                        {/* CLIENTE */}
+
                         <div className="reporte-field">
 
-                            <label htmlFor="responsableAutomatico">
+                            <label
+                                htmlFor="clienteAutomatico"
+                            >
+                                Cliente
+                            </label>
+
+                            <select
+                                id="clienteAutomatico"
+                                value={
+                                    reporteAutomatico.clienteId
+                                }
+                                onChange={
+                                    manejarClienteAutomatico
+                                }
+                                disabled={
+                                    cargandoClientes
+                                }
+                                required
+                            >
+
+                                <option value={0}>
+
+                                    {cargandoClientes
+                                        ? 'Cargando clientes...'
+                                        : 'Selecciona un cliente'}
+
+                                </option>
+
+                                {clientes.map(
+                                    (cliente) => (
+
+                                        <option
+                                            key={
+                                                cliente.id
+                                            }
+                                            value={
+                                                cliente.id
+                                            }
+                                        >
+                                            {cliente.nombre}
+                                            {' - '}
+                                            {cliente.empresa}
+                                        </option>
+                                    )
+                                )}
+
+                            </select>
+
+                        </div>
+
+                        {/* PERIODO */}
+
+                        <div className="reporte-field">
+
+                            <label
+                                htmlFor="periodoAutomatico"
+                            >
+                                Tipo de reporte
+                            </label>
+
+                            <select
+                                id="periodoAutomatico"
+                                value={
+                                    reporteAutomatico.periodo
+                                }
+                                onChange={
+                                    manejarPeriodoAutomatico
+                                }
+                            >
+
+                                <option value="MENSUAL">
+                                    Mensual
+                                </option>
+
+                                <option value="TRIMESTRAL">
+                                    Trimestral
+                                </option>
+
+                                <option value="ANUAL">
+                                    Anual
+                                </option>
+
+                            </select>
+
+                        </div>
+
+                        {/* RESPONSABLE */}
+
+                        <div className="reporte-field">
+
+                            <label
+                                htmlFor="responsableAutomatico"
+                            >
                                 Responsable
                             </label>
 
                             <input
                                 id="responsableAutomatico"
                                 type="text"
-                                value={responsable}
+                                value={
+                                    responsable
+                                }
                                 readOnly
                             />
 
                         </div>
 
+                        {/* BOTÓN */}
+
                         <div className="reporte-form-actions">
 
                             <button
                                 type="submit"
-                                disabled={generando}
+                                disabled={
+                                    generando
+                                    || cargandoClientes
+                                }
                             >
                                 {generando
                                     ? 'Generando...'
-                                    : 'Generar reporte automático'}
+                                    : `Generar reporte ${
+                                        obtenerNombrePeriodoAutomatico()
+                                    }`}
                             </button>
 
                         </div>
@@ -389,38 +724,51 @@ export function ReportesPage() {
 
             ) : (
 
+                /* =============================================
+                    REPORTE MANUAL
+                ============================================= */
+
                 <section className="reporte-form-container">
 
                     <div className="reporte-form-title">
 
                         <h3>
-                            Reporte {obtenerNombrePeriodo()} manual
+                            Reporte {
+                            obtenerNombrePeriodoManual()
+                        } manual
                         </h3>
 
                         <p>
                             Selecciona el periodo e ingresa
-                            los valores financieros que formarán
-                            parte del reporte.
+                            manualmente los valores financieros.
                         </p>
 
                     </div>
 
                     <form
                         className="reporte-form"
-                        onSubmit={generarManual}
+                        onSubmit={
+                            generarManual
+                        }
                     >
+
+                        {/* PERIODO */}
 
                         <div className="reporte-field">
 
-                            <label htmlFor="periodoReporte">
+                            <label
+                                htmlFor="periodoReporte"
+                            >
                                 Tipo de reporte
                             </label>
 
                             <select
                                 id="periodoReporte"
-                                value={periodoReporte}
-                                onChange={(evento) =>
-                                    setPeriodoReporte(evento.target.value as PeriodoReporte)
+                                value={
+                                    periodoReporte
+                                }
+                                onChange={
+                                    manejarPeriodoManual
                                 }
                             >
 
@@ -440,9 +788,13 @@ export function ReportesPage() {
 
                         </div>
 
+                        {/* PAÍS */}
+
                         <div className="reporte-field">
 
-                            <label htmlFor="paisManual">
+                            <label
+                                htmlFor="paisManual"
+                            >
                                 País
                             </label>
 
@@ -461,24 +813,34 @@ export function ReportesPage() {
 
                         </div>
 
+                        {/* RESPONSABLE */}
+
                         <div className="reporte-field">
 
-                            <label htmlFor="responsableManual">
+                            <label
+                                htmlFor="responsableManual"
+                            >
                                 Responsable
                             </label>
 
                             <input
                                 id="responsableManual"
                                 type="text"
-                                value={responsable}
+                                value={
+                                    responsable
+                                }
                                 readOnly
                             />
 
                         </div>
 
+                        {/* INGRESOS */}
+
                         <div className="reporte-field">
 
-                            <label htmlFor="ingresos">
+                            <label
+                                htmlFor="ingresos"
+                            >
                                 Ingresos
                             </label>
 
@@ -500,9 +862,13 @@ export function ReportesPage() {
 
                         </div>
 
+                        {/* GASTOS */}
+
                         <div className="reporte-field">
 
-                            <label htmlFor="gastos">
+                            <label
+                                htmlFor="gastos"
+                            >
                                 Gastos
                             </label>
 
@@ -524,15 +890,21 @@ export function ReportesPage() {
 
                         </div>
 
+                        {/* BOTÓN */}
+
                         <div className="reporte-form-actions">
 
                             <button
                                 type="submit"
-                                disabled={generando}
+                                disabled={
+                                    generando
+                                }
                             >
                                 {generando
                                     ? 'Generando...'
-                                    : `Generar reporte ${obtenerNombrePeriodo()}`}
+                                    : `Generar reporte ${
+                                        obtenerNombrePeriodoManual()
+                                    }`}
                             </button>
 
                         </div>
@@ -542,6 +914,10 @@ export function ReportesPage() {
                 </section>
 
             )}
+
+            {/* =============================================
+                RESULTADO
+            ============================================= */}
 
             {contenido && (
 

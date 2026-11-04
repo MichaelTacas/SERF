@@ -1,4 +1,5 @@
 export interface ReporteAutomaticoRequest {
     pais: string;
-    responsable: string;
+    clienteId: number;
+    periodo: 'MENSUAL' | 'TRIMESTRAL' | 'ANUAL';
 }

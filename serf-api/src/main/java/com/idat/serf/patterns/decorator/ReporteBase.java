@@ -1,11 +1,19 @@
 package com.idat.serf.patterns.decorator;
 
-public class ReporteBase implements ReporteExportable {
+import java.util.Objects;
+
+public class ReporteBase
+        implements ReporteExportable {
 
     private final String contenido;
 
-    public ReporteBase(String contenido) {
-        this.contenido = contenido;
+    public ReporteBase(
+            String contenido
+    ) {
+        this.contenido = Objects.requireNonNull(
+                contenido,
+                "El contenido del reporte no puede ser nulo"
+        );
     }
 
     @Override

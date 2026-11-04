@@ -31,10 +31,15 @@ public class ReporteFinanciero {
     }
 
     public List<String> getSecciones() {
-        return new ArrayList<>(secciones);
+        return List.copyOf(secciones);
     }
 
     public void agregarSeccion(String seccion) {
+
+        if (seccion == null || seccion.isBlank()) {
+            return;
+        }
+
         this.secciones.add(seccion);
     }
 

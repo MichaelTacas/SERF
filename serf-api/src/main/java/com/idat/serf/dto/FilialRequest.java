@@ -2,6 +2,8 @@ package com.idat.serf.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import com.idat.serf.model.Moneda;
+import jakarta.validation.constraints.NotNull;
 
 public class FilialRequest {
 
@@ -16,6 +18,9 @@ public class FilialRequest {
     @NotBlank(message = "El país es obligatorio")
     @Size(max = 80)
     private String pais;
+
+    @NotNull(message = "La moneda local es obligatoria")
+    private Moneda monedaLocal;
 
     @Size(max = 80)
     private String ciudad;
@@ -60,5 +65,13 @@ public class FilialRequest {
 
     public void setActiva(boolean activa) {
         this.activa = activa;
+    }
+
+    public Moneda getMonedaLocal() {
+        return monedaLocal;
+    }
+
+    public void setMonedaLocal(Moneda monedaLocal) {
+        this.monedaLocal = monedaLocal;
     }
 }

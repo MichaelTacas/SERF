@@ -2,6 +2,7 @@ package com.idat.serf.model;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 @Entity
@@ -31,17 +32,29 @@ public class Filial {
     @Column(length = 80)
     private String ciudad;
 
+    @NotNull(message = "La moneda local es obligatoria")
+    @Enumerated(EnumType.STRING)
+    @Column(length = 10)
+    private Moneda monedaLocal;
+
     @Column(nullable = false)
     private boolean activa = true;
 
     public Filial() {
     }
 
-    public Filial(String codigo, String nombre, String pais, String ciudad) {
+    public Filial(
+            String codigo,
+            String nombre,
+            String pais,
+            String ciudad,
+            Moneda monedaLocal
+    ) {
         this.codigo = codigo;
         this.nombre = nombre;
         this.pais = pais;
         this.ciudad = ciudad;
+        this.monedaLocal = monedaLocal;
         this.activa = true;
     }
 
@@ -79,6 +92,14 @@ public class Filial {
 
     public void setCiudad(String ciudad) {
         this.ciudad = ciudad;
+    }
+
+    public Moneda getMonedaLocal() {
+        return monedaLocal;
+    }
+
+    public void setMonedaLocal(Moneda monedaLocal) {
+        this.monedaLocal = monedaLocal;
     }
 
     public boolean isActiva() {

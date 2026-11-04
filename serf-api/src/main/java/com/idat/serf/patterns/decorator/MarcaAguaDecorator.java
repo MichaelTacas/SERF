@@ -18,12 +18,10 @@ public class MarcaAguaDecorator
 
         return super.generar()
                 + "\n"
-                + "3. SEGURIDAD DOCUMENTAL\n"
-                + "----------------------------------------\n"
+                + "6. SEGURIDAD DOCUMENTAL\n"
+                + "--------------------------------------------------------\n"
                 + "Marca de agua: "
                 + marcaAgua
                 + "\n";
     }
-
-
 }

@@ -1,8 +1,10 @@
 package com.idat.serf.service.impl;
 
 import com.idat.serf.exception.RecursoNoEncontradoException;
+import com.idat.serf.exception.ReglaNegocioException;
 import com.idat.serf.model.Cliente;
 import com.idat.serf.repository.ClienteRepository;
+import com.idat.serf.repository.VentaRepository;
 import com.idat.serf.service.ClienteService;
 import org.springframework.stereotype.Service;
 
@@ -12,9 +14,14 @@ import java.util.List;
 public class ClienteServiceImpl implements ClienteService {
 
     private final ClienteRepository clienteRepository;
+    private final VentaRepository ventaRepository;
 
-    public ClienteServiceImpl(ClienteRepository clienteRepository) {
+    public ClienteServiceImpl(
+            ClienteRepository clienteRepository,
+            VentaRepository ventaRepository
+    ) {
         this.clienteRepository = clienteRepository;
+        this.ventaRepository = ventaRepository;
     }
 
     @Override
@@ -29,6 +36,7 @@ public class ClienteServiceImpl implements ClienteService {
 
     @Override
     public Cliente buscarPorId(Long id) {
+
         return clienteRepository.findById(id)
                 .orElseThrow(() ->
                         new RecursoNoEncontradoException(
@@ -38,21 +46,43 @@ public class ClienteServiceImpl implements ClienteService {
     }
 
     @Override
-    public Cliente actualizar(Long id, Cliente clienteActualizado) {
+    public Cliente actualizar(
+            Long id,
+            Cliente clienteActualizado
+    ) {
 
-        Cliente clienteExistente = buscarPorId(id);
+        Cliente clienteExistente =
+                buscarPorId(id);
 
-        clienteExistente.setNombre(clienteActualizado.getNombre());
-        clienteExistente.setEmail(clienteActualizado.getEmail());
-        clienteExistente.setEmpresa(clienteActualizado.getEmpresa());
+        clienteExistente.setNombre(
+                clienteActualizado.getNombre()
+        );
 
-        return clienteRepository.save(clienteExistente);
+        clienteExistente.setEmail(
+                clienteActualizado.getEmail()
+        );
+
+        clienteExistente.setEmpresa(
+                clienteActualizado.getEmpresa()
+        );
+
+        return clienteRepository.save(
+                clienteExistente
+        );
     }
 
     @Override
     public void eliminar(Long id) {
 
-        Cliente cliente = buscarPorId(id);
+        Cliente cliente =
+                buscarPorId(id);
+
+        if (ventaRepository.existsByClienteId(id)) {
+
+            throw new ReglaNegocioException(
+                    "No se puede eliminar el cliente porque tiene ventas registradas"
+            );
+        }
 
         clienteRepository.delete(cliente);
     }

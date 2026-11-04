@@ -15,6 +15,7 @@ public class FilialMapper {
         filial.setNombre(request.getNombre());
         filial.setPais(request.getPais());
         filial.setCiudad(request.getCiudad());
+        filial.setMonedaLocal(request.getMonedaLocal());
         filial.setActiva(request.isActiva());
 
         return filial;
@@ -25,6 +26,7 @@ public class FilialMapper {
         filial.setNombre(request.getNombre());
         filial.setPais(request.getPais());
         filial.setCiudad(request.getCiudad());
+        filial.setMonedaLocal(request.getMonedaLocal());
         filial.setActiva(request.isActiva());
     }
 
@@ -36,6 +38,7 @@ public class FilialMapper {
         response.setNombre(filial.getNombre());
         response.setPais(filial.getPais());
         response.setCiudad(filial.getCiudad());
+        response.setMonedaLocal(filial.getMonedaLocal());
         response.setActiva(filial.isActiva());
 
         return response;

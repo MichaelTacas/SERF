@@ -20,7 +20,11 @@ public class Cliente {
     private Long id;
 
     @NotBlank(message = "El nombre es obligatorio")
-    @Size(min = 2, max = 100, message = "El nombre debe tener entre 2 y 100 caracteres")
+    @Size(
+            min = 2,
+            max = 100,
+            message = "El nombre debe tener entre 2 y 100 caracteres"
+    )
     @Column(nullable = false, length = 100)
     private String nombre;
 
@@ -30,14 +34,22 @@ public class Cliente {
     private String email;
 
     @NotBlank(message = "La empresa es obligatoria")
-    @Size(max = 100, message = "La empresa no puede superar los 100 caracteres")
+    @Size(
+            max = 100,
+            message = "La empresa no puede superar los 100 caracteres"
+    )
     @Column(nullable = false, length = 100)
     private String empresa;
 
     public Cliente() {
     }
 
-    public Cliente(Long id, String nombre, String email, String empresa) {
+    public Cliente(
+            Long id,
+            String nombre,
+            String email,
+            String empresa
+    ) {
         this.id = id;
         this.nombre = nombre;
         this.email = email;

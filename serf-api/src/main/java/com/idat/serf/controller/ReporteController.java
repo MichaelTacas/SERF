@@ -29,7 +29,7 @@ public class ReporteController {
     }
 
     // =====================================================
-    // REPORTE MENSUAL
+    // REPORTE MENSUAL MANUAL
     // =====================================================
 
     @PostMapping(
@@ -41,7 +41,8 @@ public class ReporteController {
             Authentication authentication
     ) {
 
-        String responsable = authentication.getName();
+        String responsable =
+                authentication.getName();
 
         String contenido =
                 reporteFacade.generarReporteMensual(
@@ -51,11 +52,13 @@ public class ReporteController {
                         responsable
                 );
 
-        return ResponseEntity.ok(contenido);
+        return ResponseEntity.ok(
+                contenido
+        );
     }
 
     // =====================================================
-    // REPORTE TRIMESTRAL
+    // REPORTE TRIMESTRAL MANUAL
     // =====================================================
 
     @PostMapping(
@@ -67,7 +70,8 @@ public class ReporteController {
             Authentication authentication
     ) {
 
-        String responsable = authentication.getName();
+        String responsable =
+                authentication.getName();
 
         String contenido =
                 reporteFacade.generarReporteTrimestral(
@@ -77,11 +81,13 @@ public class ReporteController {
                         responsable
                 );
 
-        return ResponseEntity.ok(contenido);
+        return ResponseEntity.ok(
+                contenido
+        );
     }
 
     // =====================================================
-    // REPORTE ANUAL
+    // REPORTE ANUAL MANUAL
     // =====================================================
 
     @PostMapping(
@@ -93,7 +99,8 @@ public class ReporteController {
             Authentication authentication
     ) {
 
-        String responsable = authentication.getName();
+        String responsable =
+                authentication.getName();
 
         String contenido =
                 reporteFacade.generarReporteAnual(
@@ -103,30 +110,37 @@ public class ReporteController {
                         responsable
                 );
 
-        return ResponseEntity.ok(contenido);
+        return ResponseEntity.ok(
+                contenido
+        );
     }
 
     // =====================================================
-    // REPORTE MENSUAL AUTOMÁTICO
+    // REPORTE AUTOMÁTICO POR CLIENTE Y PERIODO
     // =====================================================
 
     @PostMapping(
-            value = "/mensual/automatico",
+            value = "/automatico",
             produces = MediaType.TEXT_PLAIN_VALUE
     )
-    public ResponseEntity<String> generarMensualAutomatico(
+    public ResponseEntity<String> generarAutomatico(
             @Valid @RequestBody ReporteAutomaticoRequest request,
             Authentication authentication
     ) {
 
-        String responsable = authentication.getName();
+        String responsable =
+                authentication.getName();
 
         String contenido =
-                reporteService.generarMensualAutomatico(
+                reporteService.generarAutomatico(
                         request.getPais(),
+                        request.getClienteId(),
+                        request.getPeriodo(),
                         responsable
                 );
 
-        return ResponseEntity.ok(contenido);
+        return ResponseEntity.ok(
+                contenido
+        );
     }
 }

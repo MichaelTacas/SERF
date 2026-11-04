@@ -1,5 +1,7 @@
 package com.idat.serf.dto;
 
+import com.idat.serf.model.Moneda;
+
 public class FilialResponse {
 
     private Long id;
@@ -7,6 +9,7 @@ public class FilialResponse {
     private String nombre;
     private String pais;
     private String ciudad;
+    private Moneda monedaLocal;
     private boolean activa;
 
     public Long getId() {
@@ -47,6 +50,14 @@ public class FilialResponse {
 
     public void setCiudad(String ciudad) {
         this.ciudad = ciudad;
+    }
+
+    public Moneda getMonedaLocal() {
+        return monedaLocal;
+    }
+
+    public void setMonedaLocal(Moneda monedaLocal) {
+        this.monedaLocal = monedaLocal;
     }
 
     public boolean isActiva() {

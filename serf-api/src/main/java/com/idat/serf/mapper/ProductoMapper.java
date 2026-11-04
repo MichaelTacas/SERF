@@ -58,6 +58,7 @@ public class ProductoMapper {
         response.setDescripcion(producto.getDescripcion());
         response.setCategoria(producto.getCategoria());
         response.setCostoImportacion(producto.getCostoImportacion());
+        response.setCostoImportacionEur(producto.getCostoImportacionEur());
         response.setPrecioVenta(producto.getPrecioVenta());
         response.setProveedor(producto.getProveedor());
         response.setFechaImportacion(producto.getFechaImportacion());

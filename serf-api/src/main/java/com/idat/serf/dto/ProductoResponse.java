@@ -20,6 +20,7 @@ public class ProductoResponse {
 
     private Long filialId;
     private String filialNombre;
+    private BigDecimal costoImportacionEur;
 
     public Long getId() {
         return id;
@@ -115,5 +116,13 @@ public class ProductoResponse {
 
     public void setFilialNombre(String filialNombre) {
         this.filialNombre = filialNombre;
+    }
+
+    public BigDecimal getCostoImportacionEur() {
+        return costoImportacionEur;
+    }
+
+    public void setCostoImportacionEur(BigDecimal costoImportacionEur) {
+        this.costoImportacionEur = costoImportacionEur;
     }
 }

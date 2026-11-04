@@ -5,7 +5,10 @@ import type { ReporteAutomaticoRequest } from '../interfaces/ReporteAutomaticoRe
 
 export const reporteService = {
 
-    // Reporte mensual manual
+    // =====================================================
+    // REPORTE MENSUAL MANUAL
+    // =====================================================
+
     generarMensual(
         datos: ReporteRequest
     ): Promise<string> {
@@ -16,7 +19,10 @@ export const reporteService = {
         );
     },
 
-    // Reporte trimestral manual
+    // =====================================================
+    // REPORTE TRIMESTRAL MANUAL
+    // =====================================================
+
     generarTrimestral(
         datos: ReporteRequest
     ): Promise<string> {
@@ -27,7 +33,10 @@ export const reporteService = {
         );
     },
 
-    // Reporte anual manual
+    // =====================================================
+    // REPORTE ANUAL MANUAL
+    // =====================================================
+
     generarAnual(
         datos: ReporteRequest
     ): Promise<string> {
@@ -38,13 +47,17 @@ export const reporteService = {
         );
     },
 
-    // Reporte mensual automático
-    generarMensualAutomatico(
+    // =====================================================
+    // REPORTE AUTOMÁTICO
+    // CLIENTE + PERIODO
+    // =====================================================
+
+    generarAutomatico(
         datos: ReporteAutomaticoRequest
     ): Promise<string> {
 
         return apiClient.postText(
-            '/api/reportes/mensual/automatico',
+            '/api/reportes/automatico',
             datos
         );
     },
