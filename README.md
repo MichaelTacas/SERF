@@ -23,6 +23,7 @@ El proyecto está compuesto por un backend desarrollado con Spring Boot, un fron
 - JWT
 - Maven
 - Swagger / OpenAPI
+- JUnit 5
 
 ### Base de datos
 
@@ -107,9 +108,13 @@ SERF permite realizar las siguientes operaciones:
 - Registro y consulta de ventas.
 - Validación automática de stock.
 - Actualización automática del inventario después de una venta.
+- Registro del costo de importación en CNY.
+- Conversión automática del costo de importación de CNY a EUR.
 - Generación de reportes financieros.
-- Reportes manuales.
-- Reportes automáticos utilizando información registrada en el sistema.
+- Reporte mensual de ingresos.
+- Reporte trimestral de gastos e ingresos.
+- Reporte anual consolidado.
+- Reporte mensual automático utilizando información registrada en SERF.
 
 ---
 
@@ -138,6 +143,7 @@ Puede realizar funciones como:
 - Configurar precios y stock.
 - Consultar las ventas realizadas.
 - Generar reportes financieros.
+- Generar reportes mensuales, trimestrales y anuales.
 - Registrar nuevos usuarios.
 - Crear usuarios con rol Administrador o Vendedor.
 
@@ -178,6 +184,47 @@ Cuando registra una venta, el sistema obtiene automáticamente el vendedor auten
 
 ---
 
+# Gestión de productos importados
+
+Los productos permiten registrar información relacionada con su importación.
+
+Entre los datos principales se encuentran:
+
+```text
+Código
+Nombre
+Categoría
+Costo de importación
+Costo convertido a EUR
+Precio de venta
+Proveedor
+Fecha de importación
+Stock
+Filial
+```
+
+El costo de importación se registra en **CNY (yuan chino)**.
+
+SERF utiliza la configuración global del sistema para convertir automáticamente este costo a **EUR**, que corresponde a la moneda corporativa.
+
+Flujo:
+
+```text
+Costo de importación en CNY
+        ↓
+ConfiguracionGlobal
+        ↓
+Tipo de cambio CNY → EUR
+        ↓
+Costo de importación en EUR
+        ↓
+Registro del producto
+```
+
+Para fines académicos, el proyecto utiliza un tipo de cambio configurable definido en `ConfiguracionGlobal`.
+
+---
+
 # Flujo de una venta
 
 El proceso principal funciona de la siguiente manera:
@@ -212,8 +259,6 @@ Si la cantidad solicitada supera el stock disponible, la operación es rechazada
 
 SERF aplica diferentes patrones de diseño para resolver problemas específicos del sistema.
 
----
-
 ## Singleton
 
 Clase principal:
@@ -224,7 +269,12 @@ ConfiguracionGlobal
 
 Permite mantener una única instancia de la configuración global del sistema.
 
-Se utiliza para centralizar configuraciones utilizadas durante la generación de reportes, como la moneda corporativa y otros parámetros generales.
+Actualmente centraliza:
+
+- Moneda corporativa: EUR.
+- Formato de fecha.
+- Tipo de cambio utilizado para CNY → EUR.
+- Conversión de moneda.
 
 ---
 
@@ -238,7 +288,15 @@ PlantillaReporte
 
 Permite crear nuevas plantillas de reportes mediante clonación.
 
-De esta forma no es necesario construir nuevamente una plantilla completa cada vez que se genera un nuevo reporte.
+El sistema dispone de plantillas base para:
+
+```text
+Reporte mensual de ingresos
+Reporte trimestral de gastos e ingresos
+Reporte anual consolidado
+```
+
+Cuando se genera un nuevo reporte, se clona la plantilla correspondiente en lugar de construir toda su estructura nuevamente.
 
 ---
 
@@ -270,16 +328,12 @@ SeccionReporte
 
 Permite representar el reporte utilizando una estructura jerárquica.
 
-Una sección puede contener:
-
 ```text
 Sección
 ├── Elemento
 ├── Elemento
 └── Otra sección
 ```
-
-Esto facilita la construcción de reportes complejos a partir de elementos más pequeños.
 
 ---
 
@@ -295,14 +349,14 @@ MarcaAguaDecorator
 FirmaDigitalDecorator
 ```
 
-Permite agregar nuevas características a un reporte sin modificar directamente su implementación principal.
+Permite agregar características al reporte sin modificar directamente su implementación principal.
 
 Actualmente se utiliza para incorporar:
 
 - Marca de agua.
 - Firma digital.
 
-La firma del reporte se obtiene del usuario Administrador autenticado.
+La firma se obtiene del usuario Administrador autenticado.
 
 ---
 
@@ -314,11 +368,25 @@ Clase principal:
 ReporteFacade
 ```
 
-Proporciona una interfaz simplificada para generar reportes financieros.
+Proporciona una interfaz simplificada para generar los reportes financieros.
 
-La fachada coordina internamente diferentes componentes y patrones utilizados durante la generación del reporte.
+La fachada coordina:
 
-De esta forma, el controlador no necesita conocer todos los pasos internos necesarios para construirlo.
+```text
+Singleton
+Prototype
+Composite
+Builder
+Decorator
+```
+
+También permite generar:
+
+```text
+generarReporteMensual()
+generarReporteTrimestral()
+generarReporteAnual()
+```
 
 ---
 
@@ -329,8 +397,6 @@ El proyecto aplica principios SOLID para mejorar su mantenibilidad.
 ## SRP - Single Responsibility Principle
 
 Cada componente tiene una responsabilidad específica.
-
-Ejemplo:
 
 ```text
 Controller → recibe solicitudes HTTP
@@ -387,8 +453,6 @@ usuarioId
 
 Los permisos también se validan en el backend.
 
-Por ejemplo:
-
 ```text
 ADMINISTRADOR
 → acceso a Usuarios, Filiales y Reportes
@@ -405,33 +469,90 @@ Ocultar opciones en el frontend mejora la experiencia de usuario, pero la seguri
 
 # Reportes financieros
 
-SERF permite generar dos tipos de reportes.
+El módulo de Reportes está disponible únicamente para el Administrador.
 
-## Reporte automático
+SERF permite generar reportes manuales de diferentes periodos y un reporte mensual automático.
 
-Los ingresos y gastos son calculados utilizando información registrada en las ventas y productos del sistema.
+## Reporte mensual
+
+```text
+POST /api/reportes/mensual
+```
+
+Genera un reporte mensual utilizando los valores de ingresos y gastos proporcionados.
+
+---
+
+## Reporte trimestral
+
+```text
+POST /api/reportes/trimestral
+```
+
+Genera un reporte trimestral de gastos e ingresos utilizando la plantilla correspondiente del patrón Prototype.
+
+---
+
+## Reporte anual
+
+```text
+POST /api/reportes/anual
+```
+
+Genera un reporte anual consolidado utilizando la plantilla correspondiente del patrón Prototype.
+
+---
+
+## Reporte mensual automático
+
+```text
+POST /api/reportes/mensual/automatico
+```
+
+Los ingresos y gastos son obtenidos automáticamente desde la información registrada en SERF.
+
+Flujo general:
 
 ```text
 Ventas
    ↓
 Ingresos
    ↓
-Costos de productos
+Productos vendidos
+   ↓
+Costos
    ↓
 Gastos
    ↓
-Reporte financiero
+Reporte financiero mensual
 ```
 
 ---
 
-## Reporte manual
+## Interfaz de reportes
 
-Permite ingresar valores financieros manualmente para generar un reporte.
+Desde el frontend el Administrador puede seleccionar:
 
-El responsable del reporte no puede modificarse manualmente.
+```text
+Reporte manual
 
-El backend obtiene automáticamente al Administrador autenticado mediante Spring Security y JWT.
+Tipo de reporte:
+├── Mensual
+├── Trimestral
+└── Anual
+```
+
+Después ingresa:
+
+```text
+País
+Ingresos
+Gastos
+```
+
+El responsable es obtenido automáticamente desde la sesión autenticada.
+
+El frontend selecciona el endpoint correspondiente según el periodo elegido.
 
 ---
 
@@ -453,11 +574,23 @@ COLLATE utf8mb4_unicode_ci;
 USE serf_db;
 ```
 
-Hibernate administra la estructura de las tablas mediante:
+Hibernate administra la estructura mediante:
 
 ```properties
 spring.jpa.hibernate.ddl-auto=update
 ```
+
+Entre las tablas principales se encuentran:
+
+```text
+clientes
+usuarios
+filiales
+productos
+ventas
+```
+
+La tabla `productos` también almacena el costo de importación y su valor convertido a EUR.
 
 ---
 
@@ -486,10 +619,10 @@ Luego ejecutar:
 .\mvnw.cmd spring-boot:run
 ```
 
-El backend se ejecutará normalmente en:
+En la configuración actual del proyecto, el backend se ejecuta en:
 
 ```text
-http://localhost:8080
+http://localhost:8030
 ```
 
 > Por seguridad, las contraseñas y claves JWT no se almacenan en el repositorio.
@@ -519,53 +652,83 @@ http://localhost:5173
 
 ---
 
-# Pruebas realizadas
+# Swagger / OpenAPI
 
-Durante el desarrollo se probaron los principales flujos del sistema.
+Con el backend ejecutándose:
 
-## Administrador
+```text
+http://localhost:8030/swagger-ui/index.html
+```
 
-- Inicio de sesión.
-- Gestión de clientes.
-- Gestión de filiales.
-- Gestión de productos.
-- Consulta de ventas.
-- Generación de reportes.
-- Registro de usuarios.
-- Validación de permisos.
+Swagger permite probar los módulos:
 
-## Vendedor
+```text
+Auth
+Clientes
+Usuarios
+Filiales
+Productos
+Ventas
+Reportes
+```
 
-- Inicio de sesión.
-- Registro de clientes.
-- Edición de clientes.
-- Consulta de productos.
-- Consulta de stock.
-- Registro de ventas.
-- Asignación automática del vendedor autenticado.
-- Actualización automática del stock.
-- Restricción de módulos administrativos.
+En `reporte-controller` se encuentran:
 
-También se realizaron pruebas sobre componentes relacionados con los patrones de diseño y validaciones del sistema.
+```text
+POST /api/reportes/mensual
+POST /api/reportes/trimestral
+POST /api/reportes/anual
+POST /api/reportes/mensual/automatico
+```
+
+Las operaciones protegidas requieren autenticación mediante JWT.
 
 ---
 
-# Swagger / OpenAPI
+# Pruebas
 
-El backend utiliza Swagger para documentar y probar los endpoints REST.
+Las pruebas se encuentran en:
 
-Con el backend ejecutándose, la documentación puede consultarse desde Swagger UI.
+```text
+serf-api/src/test/java/com/idat/serf
+```
 
-Desde Swagger es posible probar operaciones relacionadas con:
+Incluyen pruebas para:
 
-- Clientes.
-- Filiales.
-- Productos.
-- Ventas.
-- Usuarios.
-- Reportes.
+```text
+Singleton
+Prototype
+Builder
+Composite
+Decorator
+Facade
+StockDisponibleValidator
+Contexto de Spring Boot
+```
 
-Las operaciones protegidas requieren autenticación.
+Entre las clases principales:
+
+```text
+ConfiguracionGlobalTest
+PlantillaReporteTest
+ReporteBuilderTest
+CompositeTest
+DecoratorTest
+ReporteFacadeTest
+StockDisponibleValidatorTest
+SerfApplicationTests
+```
+
+En la ejecución realizada mediante Maven se obtuvo:
+
+```text
+Tests run: 10
+Failures: 0
+Errors: 0
+Skipped: 0
+
+BUILD SUCCESS
+```
 
 ---
 
@@ -583,6 +746,8 @@ Durante el desarrollo se priorizaron:
 - Código organizado por capas.
 - Patrones de diseño reutilizables.
 - Uso de DTO para transferencia de información.
+- Validaciones de reglas de negocio.
+- Separación entre frontend y backend.
 
 ---
 
@@ -592,4 +757,4 @@ Durante el desarrollo se priorizaron:
 
 **Proyecto:** SERF - Sistema Empresarial de Gestión de Reportes Financieros
 
-El proyecto demuestra la aplicación práctica de principios SOLID y patrones de diseño dentro de un sistema empresarial compuesto por backend, frontend y base de datos.
+El proyecto demuestra la aplicación práctica de programación orientada a objetos, principios SOLID y patrones de diseño dentro de un sistema empresarial compuesto por backend, frontend y base de datos.

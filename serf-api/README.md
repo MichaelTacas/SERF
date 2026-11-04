@@ -2,7 +2,7 @@
 
 Backend del proyecto **SERF - Sistema Empresarial de Gestión de Reportes Financieros**.
 
-Este módulo contiene la API REST desarrollada con **Java 21 y Spring Boot**, encargada de gestionar usuarios, clientes, filiales, productos, ventas, seguridad y generación de reportes financieros.
+Este módulo contiene la API REST desarrollada con **Java 21 y Spring Boot 4.1.1**, encargada de gestionar usuarios, clientes, filiales, productos, ventas, seguridad, inventario y generación de reportes financieros.
 
 ---
 
@@ -40,7 +40,13 @@ src/main/java/com/idat/serf
 └── SerfApplication.java
 ```
 
-Cada paquete tiene una responsabilidad específica para mantener bajo acoplamiento y alta cohesión.
+Cada paquete mantiene una responsabilidad específica para favorecer:
+
+- Bajo acoplamiento.
+- Alta cohesión.
+- Separación de responsabilidades.
+- Mantenibilidad.
+- Facilidad para realizar pruebas.
 
 ---
 
@@ -49,8 +55,6 @@ Cada paquete tiene una responsabilidad específica para mantener bajo acoplamien
 ### Controller
 
 Recibe las solicitudes HTTP y expone los endpoints REST.
-
-Ejemplos:
 
 ```text
 AuthController
@@ -66,8 +70,6 @@ VentaController
 
 Contiene la lógica de negocio.
 
-Ejemplos:
-
 ```text
 ClienteService
 FilialService
@@ -75,6 +77,12 @@ ProductoService
 ReporteService
 UsuarioService
 VentaService
+```
+
+Las implementaciones se encuentran principalmente en:
+
+```text
+service/impl
 ```
 
 ### Repository
@@ -91,17 +99,17 @@ VentaRepository
 
 ### DTO
 
-Define los objetos utilizados para recibir y devolver información mediante la API.
+Define los objetos utilizados para recibir y transferir información mediante la API.
 
 ### Mapper
 
-Convierte entidades del modelo en DTO y viceversa.
+Convierte entidades del modelo en DTO y viceversa cuando corresponde.
 
 ### Validator
 
 Contiene validaciones específicas del negocio.
 
-Actualmente:
+Actualmente destaca:
 
 ```text
 StockDisponibleValidator
@@ -133,7 +141,7 @@ spring.datasource.password=${DB_PASSWORD}
 spring.jpa.hibernate.ddl-auto=update
 ```
 
-Las tablas principales corresponden a:
+Tablas principales:
 
 ```text
 clientes
@@ -143,17 +151,23 @@ productos
 ventas
 ```
 
+Hibernate actualiza la estructura mediante:
+
+```properties
+spring.jpa.hibernate.ddl-auto=update
+```
+
 ---
 
 ## Variables de entorno
 
-La aplicación utiliza variables de entorno para evitar guardar credenciales directamente en el código.
-
-Variables requeridas:
+La aplicación utiliza variables de entorno para evitar almacenar credenciales directamente en el código.
 
 ```text
+DB_USER
 DB_PASSWORD
 JWT_SECRET
+JWT_ISSUER
 ADMIN_EMAIL
 ADMIN_PASSWORD
 ```
@@ -161,13 +175,15 @@ ADMIN_PASSWORD
 Ejemplo:
 
 ```text
+DB_USER=root
 DB_PASSWORD=tu_password_mysql
 JWT_SECRET=tu_secret_base64
+JWT_ISSUER=serf-api
 ADMIN_EMAIL=admin@serf.local
 ADMIN_PASSWORD=tu_password_admin
 ```
 
-La clave `JWT_SECRET` debe estar codificada en Base64 y representar una clave de al menos 32 bytes.
+La clave `JWT_SECRET` debe encontrarse codificada correctamente y cumplir con la longitud requerida por la configuración JWT.
 
 ---
 
@@ -186,9 +202,7 @@ Endpoint público de autenticación:
 POST /api/auth/login
 ```
 
-Swagger también se encuentra habilitado públicamente para fines de desarrollo y pruebas.
-
-El resto de la API requiere autenticación según la configuración de seguridad.
+El resto de operaciones se protege según el rol del usuario.
 
 ### Roles
 
@@ -197,53 +211,78 @@ ADMINISTRADOR
 VENDEDOR
 ```
 
+El JWT permite identificar al usuario autenticado y utilizar datos como:
+
+```text
+correo
+rol
+usuarioId
+```
+
+Esto permite, por ejemplo, identificar automáticamente al vendedor al registrar una venta.
+
 ---
 
 ## Administrador inicial
 
-Al iniciar la aplicación, SERF verifica si existe el administrador configurado mediante:
+Al iniciar la aplicación, SERF verifica la existencia del administrador configurado mediante:
 
 ```text
 ADMIN_EMAIL
 ADMIN_PASSWORD
 ```
 
-Si no existe, el sistema puede crear el usuario administrador inicial.
+Si no existe, el sistema puede crear el usuario administrador inicial según la configuración del proyecto.
 
 ---
 
-## Módulos principales
+# Productos e importaciones
 
-### Clientes
-
-Permite gestionar la información de clientes.
-
-### Usuarios
-
-Permite gestionar usuarios del sistema.
-
-### Filiales
-
-Permite registrar las diferentes filiales de la empresa.
-
-### Productos
-
-Gestiona información como:
+El módulo de Productos permite gestionar información como:
 
 ```text
 Código
 Nombre
+Descripción
 Categoría
 Costo de importación
+Costo convertido a EUR
 Precio de venta
 Proveedor
+Fecha de importación
 Stock
 Filial
 ```
 
-### Ventas
+## Conversión CNY → EUR
 
-Registra operaciones de venta asociadas a:
+El costo de importación se registra en **CNY**.
+
+Posteriormente el sistema calcula automáticamente su equivalente en **EUR**, que corresponde a la moneda corporativa configurada.
+
+Flujo:
+
+```text
+Costo importación en CNY
+        ↓
+ProductoServiceImpl
+        ↓
+ConfiguracionGlobal
+        ↓
+Conversión CNY → EUR
+        ↓
+Costo importación en EUR
+```
+
+La configuración global utiliza el patrón **Singleton**.
+
+El tipo de cambio utilizado en el proyecto es configurable y se utiliza con fines académicos; no representa necesariamente una cotización de mercado en tiempo real.
+
+---
+
+# Ventas
+
+Las ventas se encuentran asociadas a:
 
 ```text
 Producto
@@ -255,7 +294,27 @@ Precio unitario
 Método de pago
 ```
 
-Antes de registrar una venta se valida la disponibilidad del stock.
+Antes de registrar una venta se verifica la disponibilidad del stock.
+
+Flujo:
+
+```text
+Solicitud de venta
+        ↓
+VentaService
+        ↓
+StockDisponibleValidator
+        ↓
+ProductoRepository
+        ↓
+Validación de stock
+        ↓
+VentaRepository
+        ↓
+Registro de venta
+        ↓
+Actualización de stock
+```
 
 ---
 
@@ -269,54 +328,111 @@ StockDisponibleValidator
 
 verifica:
 
-- Que la cantidad sea mayor a cero.
+- Que la cantidad sea válida.
 - Que exista stock suficiente.
+- Que no se registre una venta superior al inventario disponible.
 
-Cuando la venta es válida:
-
-```text
-Registrar venta
-↓
-Descontar stock
-↓
-Guardar producto actualizado
-↓
-Guardar venta
-```
+Si no existe suficiente stock, la operación es rechazada.
 
 ---
 
-## Reportes financieros
+# Reportes financieros
 
-La API permite generar reportes financieros mensuales.
+SERF permite generar reportes financieros utilizando diferentes periodos.
 
-### Reporte manual
+## Reporte mensual
 
 ```text
 POST /api/reportes/mensual
 ```
 
-Los datos financieros son enviados mediante la solicitud.
+Genera un reporte mensual utilizando los ingresos y gastos enviados en la solicitud.
 
-### Reporte automático
+---
+
+## Reporte trimestral
+
+```text
+POST /api/reportes/trimestral
+```
+
+Genera un reporte trimestral de gastos e ingresos.
+
+---
+
+## Reporte anual
+
+```text
+POST /api/reportes/anual
+```
+
+Genera un reporte anual consolidado.
+
+---
+
+## Reporte mensual automático
 
 ```text
 POST /api/reportes/mensual/automatico
 ```
 
-El sistema consulta la base de datos para calcular información relacionada con ingresos y costos de productos vendidos.
+En este caso SERF obtiene automáticamente información registrada en el sistema.
+
+Flujo general:
+
+```text
+Ventas registradas
+       ↓
+Ingresos
+       ↓
+Productos vendidos
+       ↓
+Costos
+       ↓
+Gastos
+       ↓
+Reporte mensual automático
+```
+
+El responsable del reporte se obtiene automáticamente del usuario Administrador autenticado mediante Spring Security.
 
 ---
 
-## Patrones de diseño
+# Patrón Prototype en reportes
 
-Los patrones se encuentran en:
+La clase principal es:
+
+```text
+PlantillaReporte
+```
+
+SERF utiliza plantillas base para:
+
+```text
+Reporte mensual de ingresos
+Reporte trimestral de gastos e ingresos
+Reporte anual consolidado
+```
+
+Cada plantilla puede ser clonada mediante:
+
+```java
+PlantillaReporte copia = plantilla.clonar();
+```
+
+Esto evita construir nuevamente toda la configuración del reporte cada vez que se necesita generar uno nuevo.
+
+---
+
+# Patrones de diseño
+
+Los patrones se encuentran principalmente en:
 
 ```text
 com.idat.serf.patterns
 ```
 
-### Creacionales
+## Creacionales
 
 ```text
 Singleton
@@ -324,7 +440,7 @@ Prototype
 Builder
 ```
 
-### Estructurales
+## Estructurales
 
 ```text
 Composite
@@ -332,16 +448,19 @@ Decorator
 Facade
 ```
 
-Principales clases:
+Clases principales:
 
 ```text
 ConfiguracionGlobal
 PlantillaReporte
 ReporteBuilder
 ReporteFinancieroBuilder
+ReporteFinanciero
 ComponenteReporte
 ElementoReporte
 SeccionReporte
+ReporteExportable
+ReporteBase
 ReporteDecorator
 MarcaAguaDecorator
 FirmaDigitalDecorator
@@ -350,109 +469,79 @@ ReporteFacade
 
 ---
 
-## SOLID
-
-El proyecto aplica principios SOLID mediante:
-
-- Separación entre controladores, servicios y repositorios.
-- Validadores independientes.
-- Uso de interfaces de servicio.
-- Inyección de dependencias mediante constructores.
-- Clases con responsabilidades específicas.
-
-Ejemplo:
+## Singleton
 
 ```text
-VentaServiceImpl
-├── VentaRepository
-├── ProductoRepository
-└── StockDisponibleValidator
+ConfiguracionGlobal
+```
+
+Centraliza:
+
+- Moneda corporativa.
+- Formato de fecha.
+- Tipo de cambio CNY → EUR.
+- Conversión monetaria.
+
+---
+
+## Prototype
+
+```text
+PlantillaReporte
+```
+
+Permite clonar las plantillas base utilizadas para los reportes mensuales, trimestrales y anuales.
+
+---
+
+## Builder
+
+```text
+ReporteBuilder
+ReporteFinancieroBuilder
+ReporteFinanciero
+```
+
+Construye el reporte financiero paso a paso.
+
+---
+
+## Composite
+
+```text
+ComponenteReporte
+ElementoReporte
+SeccionReporte
+```
+
+Permite construir secciones jerárquicas dentro de un reporte.
+
+---
+
+## Decorator
+
+```text
+ReporteBase
+ReporteDecorator
+MarcaAguaDecorator
+FirmaDigitalDecorator
+```
+
+Permite agregar características al reporte sin modificar su implementación principal.
+
+Actualmente se agregan:
+
+```text
+Marca de agua
+Firma digital
 ```
 
 ---
 
-## Swagger
-
-Con el backend ejecutándose:
+## Facade
 
 ```text
-http://localhost:8080/swagger-ui/index.html
+ReporteFacade
 ```
 
-Swagger permite probar los módulos:
-
-```text
-Auth
-Clientes
-Usuarios
-Filiales
-Productos
-Ventas
-Reportes
-```
-
----
-
-## Ejecutar el proyecto
-
-Desde IntelliJ ejecutar:
-
-```text
-SerfApplication.java
-```
-
-También puede ejecutarse desde la terminal de Windows:
-
-```bash
-mvnw.cmd spring-boot:run
-```
-
-El servidor se inicia por defecto en:
-
-```text
-http://localhost:8080
-```
-
----
-
-## Pruebas
-
-Las pruebas se encuentran en:
-
-```text
-src/test/java/com/idat/serf
-```
-
-Incluyen pruebas para:
-
-```text
-Singleton
-Prototype
-Builder
-Composite
-Decorator
-Facade
-StockDisponibleValidator
-Contexto de Spring Boot
-```
-
-Entre las clases principales:
-
-```text
-ConfiguracionGlobalTest
-PlantillaReporteTest
-ReporteBuilderTest
-CompositeTest
-DecoratorTest
-ReporteFacadeTest
-StockDisponibleValidatorTest
-SerfApplicationTests
-```
-
----
-
-## Proyecto académico
-
-**Curso:** Patrones de Diseño de Software
-
-**Sistema:** SERF - Sistema Empresarial de Gestión de Reportes Financieros
+Simplifica la generación de reportes y coordina internamente los demás patrones.
